@@ -5,14 +5,19 @@ import '../screens/auth/login_screen.dart';
 import '../screens/home/home_screen.dart';
 import 'theme.dart';
 import '../screens/auth/verify_email_screen.dart';
+import '../screens/onboarding/personal_info_screen.dart';
+import '../providers/onboarding_provider.dart';
 
 class FitTrackApp extends StatelessWidget {
   const FitTrackApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+      ],
       child: MaterialApp(
         title: 'FitTrack',
         debugShowCheckedModeBanner: false,
@@ -42,7 +47,14 @@ class _AuthGate extends StatelessWidget {
       return const VerifyEmailScreen();
     }
 
-    // TODO Phase 3: check onboarding completion, else show onboarding
+    if (authProvider.isCheckingProfile) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (!authProvider.hasCompletedOnboarding) {
+      return const PersonalInfoScreen();
+    }
+
     return const HomeScreen();
   }
 }

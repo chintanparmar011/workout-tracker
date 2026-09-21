@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../services/firestore_service.dart';
+import '../models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -17,12 +19,35 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggedIn => _user != null;
   bool get isEmailVerified => _authService.isEmailVerified;
 
+  final FirestoreService _firestoreService = FirestoreService();
+  UserModel? _userProfile;
+  bool _isCheckingProfile = false;
+
+  UserModel? get userProfile => _userProfile;
+  bool get isCheckingProfile => _isCheckingProfile;
+  bool get hasCompletedOnboarding => _userProfile != null;
+
+  Future<void> checkUserProfile() async {
+    if (_user == null) return;
+    _isCheckingProfile = true;
+    notifyListeners();
+
+    final result = await _firestoreService.getUserProfile(_user!.uid);
+
+    _userProfile = result.isSuccess ? result.user : null;
+    _isCheckingProfile = false;
+    notifyListeners();
+  }
+
   AuthProvider() {
-    _authService.authStateChanges.listen((user) {
+    _authService.authStateChanges.listen((user) async {
       _user = user;
-      _isInitializing =
-          false; // NEW — first emission means Firebase has resolved state
+      _isInitializing = false;
       notifyListeners();
+
+      if (user != null && user.emailVerified) {
+        await checkUserProfile();
+      }
     });
   }
 
