@@ -76,6 +76,12 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> checkEmailVerified() async {
     await _authService.reloadUser();
+    final updatedUser = FirebaseAuth.instance.currentUser;
+    _user = updatedUser;
+
+    if (_user != null && _user!.emailVerified && !hasCompletedOnboarding) {
+      await checkUserProfile();
+    }
     notifyListeners();
   }
 
@@ -120,6 +126,22 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<bool> signInWithDemo() async {
+    const email = 'demo@fittracker.com';
+    const pass = 'demo123456';
+
+    bool success = await signIn(email, pass);
+
+    if (!success &&
+        _errorMessage != null &&
+        (_errorMessage!.contains('Incorrect email or password') ||
+            _errorMessage!.contains('user-not-found'))) {
+      success = await signUp(email, pass);
+    }
+
+    return success;
   }
 
   Future<void> signOut() async {

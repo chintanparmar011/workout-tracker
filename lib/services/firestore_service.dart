@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import '../models/exercise_model.dart';
+import '../models/workout_model.dart';
+import '../models/workout_record_model.dart';
 
 class FirestoreResult {
   final bool isSuccess;
@@ -40,6 +43,96 @@ class FirestoreService {
       return FirestoreResult.success(user);
     } catch (e) {
       return FirestoreResult.failure(_mapError(e));
+    }
+  }
+
+  // --- Strength Module Methods ---
+
+  Future<List<ExerciseModel>> getExercisesByMuscleGroup(
+    String muscleGroup,
+  ) async {
+    try {
+      final snapshot = await _db
+          .collection('exercises')
+          .where('muscleGroup', isEqualTo: muscleGroup)
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ExerciseModel.fromMap(doc.id, doc.data()))
+          .toList();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error fetching exercises: $e');
+      return [];
+    }
+  }
+
+  Future<ExerciseModel?> getExerciseById(String id) async {
+    try {
+      final doc = await _db.collection('exercises').doc(id).get();
+      if (!doc.exists) return null;
+      return ExerciseModel.fromMap(doc.id, doc.data()!);
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error fetching exercise by ID: $e');
+      return null;
+    }
+  }
+
+  Future<List<WorkoutPlanModel>> getWorkoutPlans(
+    String goal,
+    String level,
+  ) async {
+    try {
+      final snapshot = await _db
+          .collection('workout_plans')
+          .where('goal', isEqualTo: goal)
+          .where('fitnessLevel', isEqualTo: level)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => WorkoutPlanModel.fromMap(doc.id, doc.data()))
+          .toList();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error fetching workout plans: $e');
+      return [];
+    }
+  }
+
+  Future<bool> saveWorkoutRecord(
+    String userId,
+    WorkoutRecordModel record,
+  ) async {
+    try {
+      await _usersRef
+          .doc(userId)
+          .collection('workout_records')
+          .add(record.toMap());
+      return true;
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error saving workout record: $e');
+      return false;
+    }
+  }
+
+  Future<List<WorkoutRecordModel>> getWorkoutHistory(String userId) async {
+    try {
+      final snapshot = await _usersRef
+          .doc(userId)
+          .collection('workout_records')
+          .orderBy('date', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => WorkoutRecordModel.fromMap(doc.id, doc.data()))
+          .toList();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error fetching workout history: $e');
+      return [];
     }
   }
 

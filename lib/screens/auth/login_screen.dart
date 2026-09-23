@@ -104,6 +104,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     : const Text('Login'),
               ),
               const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: authProvider.isLoading
+                    ? null
+                    : () async {
+                        final success = await authProvider.signInWithDemo();
+                        if (!success && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                authProvider.errorMessage ??
+                                    'Demo Login failed',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                child: const Text('Demo Login (Fast Access)'),
+              ),
+              const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
                   Navigator.push(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../../providers/onboarding_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class FitnessLevelScreen extends StatefulWidget {
   const FitnessLevelScreen({super.key});
@@ -78,9 +79,13 @@ class _FitnessLevelScreenState extends State<FitnessLevelScreen> {
       return;
     }
 
-    // Profile saved — pop back to root so _AuthGate re-evaluates
-    // and routes to Home now that the profile exists.
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    // Trigger profile reload in AuthProvider so _AuthGate switches to Home
+    if (mounted) {
+      await context.read<AuthProvider>().checkUserProfile();
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    }
   }
 
   @override

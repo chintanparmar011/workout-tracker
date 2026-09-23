@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/home/home_screen.dart';
 import 'theme.dart';
 import '../screens/auth/verify_email_screen.dart';
 import '../screens/onboarding/personal_info_screen.dart';
 import '../providers/onboarding_provider.dart';
+import '../screens/main_navigation_screen.dart';
+import '../providers/workout_provider.dart';
+import '../providers/progress_provider.dart';
 
 class FitTrackApp extends StatelessWidget {
   const FitTrackApp({super.key});
@@ -17,6 +19,8 @@ class FitTrackApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+        ChangeNotifierProvider(create: (_) => WorkoutProvider()),
+        ChangeNotifierProvider(create: (_) => ProgressProvider()),
       ],
       child: MaterialApp(
         title: 'FitTrack',
@@ -55,6 +59,6 @@ class _AuthGate extends StatelessWidget {
       return const PersonalInfoScreen();
     }
 
-    return const HomeScreen();
+    return const MainNavigationScreen();
   }
 }
