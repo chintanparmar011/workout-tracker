@@ -54,6 +54,11 @@ class ProgressProvider extends ChangeNotifier {
   }
 
   Future<void> loadWeightHistory(String userId, {bool notify = true}) async {
+    if (userId.trim().isEmpty) {
+      _weightHistory = [];
+      if (notify) notifyListeners();
+      return;
+    }
     try {
       _weightHistory = await _firestoreService.getWeightHistory(userId);
     } catch (_) {
@@ -66,6 +71,7 @@ class ProgressProvider extends ChangeNotifier {
   }
 
   Future<void> loadWorkoutStats(String userId, {bool notify = true}) async {
+    if (userId.trim().isEmpty) return;
     try {
       final records = await _firestoreService.getWorkoutHistory(userId);
       _totalWorkouts = records.length;
@@ -73,14 +79,15 @@ class ProgressProvider extends ChangeNotifier {
       _totalReps = records.fold(0, (sum, r) => sum + r.totalActualReps);
 
       if (records.isNotEmpty) {
-        final totalPct = records.fold<double>(0.0, (sum, r) => sum + r.overallCompletionPercent);
+        final totalPct = records.fold<double>(
+          0.0,
+          (sum, r) => sum + r.overallCompletionPercent,
+        );
         _avgCompletion = totalPct / records.length;
       } else {
         _avgCompletion = 0.0;
       }
-    } catch (_) {
-      // Keep existing stats on failure
-    }
+    } catch (_) {}
 
     if (notify) {
       notifyListeners();
@@ -93,6 +100,12 @@ class ProgressProvider extends ChangeNotifier {
     DateTime? date,
     String? note,
   }) async {
+    if (userId.trim().isEmpty) {
+      _errorMessage = 'User is not logged in.';
+      notifyListeners();
+      return false;
+    }
+
     final record = WeightRecordModel(
       id: '',
       weight: weight,
@@ -105,15 +118,23 @@ class ProgressProvider extends ChangeNotifier {
     _weightHistory.sort((a, b) => a.date.compareTo(b.date));
     notifyListeners();
 
-    final success = await _firestoreService.saveWeightRecord(userId, record);
-    if (!success) {
+    try {
+      final success = await _firestoreService.saveWeightRecord(userId, record);
+      if (!success) {
+        _weightHistory.remove(record);
+        _errorMessage = 'Failed to save weight record to cloud.';
+        notifyListeners();
+        return false;
+      }
+
+      // Reload from server to synchronize
+      await loadWeightHistory(userId);
+      return true;
+    } catch (_) {
       _weightHistory.remove(record);
+      _errorMessage = 'Error saving weight record.';
       notifyListeners();
       return false;
     }
-
-    // Reload from server to synchronize
-    loadWeightHistory(userId);
-    return true;
   }
 }

@@ -25,10 +25,16 @@ class NutritionProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   // Aggregate consumed macros for selected date
-  double get totalCalories => _dailyLogs.fold(0.0, (sum, item) => sum + (item.calories * item.quantity));
-  double get totalProtein => _dailyLogs.fold(0.0, (sum, item) => sum + (item.protein * item.quantity));
-  double get totalCarbs => _dailyLogs.fold(0.0, (sum, item) => sum + (item.carbs * item.quantity));
-  double get totalFat => _dailyLogs.fold(0.0, (sum, item) => sum + (item.fat * item.quantity));
+  double get totalCalories => _dailyLogs.fold(
+    0.0,
+    (sum, item) => sum + (item.calories * item.quantity),
+  );
+  double get totalProtein =>
+      _dailyLogs.fold(0.0, (sum, item) => sum + (item.protein * item.quantity));
+  double get totalCarbs =>
+      _dailyLogs.fold(0.0, (sum, item) => sum + (item.carbs * item.quantity));
+  double get totalFat =>
+      _dailyLogs.fold(0.0, (sum, item) => sum + (item.fat * item.quantity));
 
   // Goal-based targets (Section 20 of project document)
   int calculateTargetCalories(UserModel? user) {
@@ -62,7 +68,11 @@ class NutritionProvider extends ChangeNotifier {
     }
   }
 
-  int calculateTargetCarbs(UserModel? user, int targetCalories, int targetProtein) {
+  int calculateTargetCarbs(
+    UserModel? user,
+    int targetCalories,
+    int targetProtein,
+  ) {
     // 4 kcal per gram of protein and carb, 9 kcal per gram of fat
     final proteinCalories = targetProtein * 4;
     final remainingCalories = targetCalories - proteinCalories;
@@ -70,7 +80,11 @@ class NutritionProvider extends ChangeNotifier {
     return ((remainingCalories * 0.60) / 4).round().clamp(100, 500);
   }
 
-  int calculateTargetFat(UserModel? user, int targetCalories, int targetProtein) {
+  int calculateTargetFat(
+    UserModel? user,
+    int targetCalories,
+    int targetProtein,
+  ) {
     final proteinCalories = targetProtein * 4;
     final remainingCalories = targetCalories - proteinCalories;
     // ~40% of remainder to fat
@@ -90,12 +104,21 @@ class NutritionProvider extends ChangeNotifier {
   }
 
   Future<void> loadDailyLogs(String userId, [DateTime? date]) async {
+    if (userId.trim().isEmpty) {
+      _dailyLogs = [];
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     final targetDate = date ?? _selectedDate;
     _isLoading = true;
     notifyListeners();
 
     try {
-      _dailyLogs = await _firestoreService.getFoodLogsForDate(userId, targetDate);
+      _dailyLogs = await _firestoreService.getFoodLogsForDate(
+        userId,
+        targetDate,
+      );
     } catch (_) {
       _dailyLogs = [];
     } finally {
@@ -110,6 +133,12 @@ class NutritionProvider extends ChangeNotifier {
     required double quantity,
     required String mealType,
   }) async {
+    if (userId.trim().isEmpty) {
+      _errorMessage = 'User is not logged in.';
+      notifyListeners();
+      return false;
+    }
+
     final log = FoodLogModel(
       id: '',
       foodId: food.id,
@@ -127,32 +156,50 @@ class NutritionProvider extends ChangeNotifier {
     _dailyLogs.add(log);
     notifyListeners();
 
-    final success = await _firestoreService.addFoodLog(userId, log);
-    if (!success) {
+    try {
+      final success = await _firestoreService.addFoodLog(userId, log);
+      if (!success) {
+        _dailyLogs.remove(log);
+        _errorMessage = 'Failed to save food log to cloud.';
+        notifyListeners();
+        return false;
+      }
+
+      // Refresh logs to fetch server-assigned ID
+      await loadDailyLogs(userId, _selectedDate);
+      return true;
+    } catch (_) {
       _dailyLogs.remove(log);
+      _errorMessage = 'Error saving food log.';
       notifyListeners();
       return false;
     }
-
-    // Refresh logs to fetch server-assigned ID
-    loadDailyLogs(userId, _selectedDate);
-    return true;
   }
 
   Future<bool> deleteFoodLog(String userId, String logId) async {
+    if (userId.trim().isEmpty || logId.trim().isEmpty) return false;
+
     final index = _dailyLogs.indexWhere((l) => l.id == logId);
     if (index == -1) return false;
 
     final removed = _dailyLogs.removeAt(index);
     notifyListeners();
 
-    final success = await _firestoreService.deleteFoodLog(userId, logId);
-    if (!success) {
+    try {
+      final success = await _firestoreService.deleteFoodLog(userId, logId);
+      if (!success) {
+        _dailyLogs.insert(index, removed);
+        _errorMessage = 'Failed to delete food log.';
+        notifyListeners();
+        return false;
+      }
+      return true;
+    } catch (_) {
       _dailyLogs.insert(index, removed);
+      _errorMessage = 'Error deleting food log.';
       notifyListeners();
       return false;
     }
-    return true;
   }
 
   Future<void> searchFoods(String query) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -60,13 +61,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   backgroundColor: Colors.deepOrange.withValues(alpha: 0.15),
                   child: Text(
                     user.name.isNotEmpty ? user.name[0].toUpperCase() : 'A',
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepOrange,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   user.name.isNotEmpty ? user.name : 'Athlete',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -80,7 +88,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Physical Attributes Card
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -90,9 +100,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildDivider(),
                   _buildAttrTile('Gender', user.gender?.toUpperCase() ?? '-'),
                   _buildDivider(),
-                  _buildAttrTile('Height', user.height != null ? '${user.height!.toStringAsFixed(0)} cm' : '-'),
+                  _buildAttrTile(
+                    'Height',
+                    user.height != null
+                        ? '${user.height!.toStringAsFixed(0)} cm'
+                        : '-',
+                  ),
                   _buildDivider(),
-                  _buildAttrTile('Weight', user.currentWeight != null ? '${user.currentWeight!.toStringAsFixed(1)} kg' : '-'),
+                  _buildAttrTile(
+                    'Weight',
+                    user.currentWeight != null
+                        ? '${user.currentWeight!.toStringAsFixed(1)} kg'
+                        : '-',
+                  ),
                 ],
               ),
             ),
@@ -100,23 +120,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 20),
 
           // Goal & Level Settings
-          const Text('Training Settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text(
+            'Training Settings',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
 
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.flag_outlined, color: Colors.deepOrange),
+                  leading: const Icon(
+                    Icons.flag_outlined,
+                    color: Colors.deepOrange,
+                  ),
                   title: const Text('Fitness Goal'),
-                  subtitle: Text(_goals.firstWhere((g) => g['value'] == user.fitnessGoal, orElse: () => {'label': user.fitnessGoal})['label']!),
+                  subtitle: Text(
+                    _goals.firstWhere(
+                      (g) => g['value'] == user.fitnessGoal,
+                      orElse: () => {'label': user.fitnessGoal},
+                    )['label']!,
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _editGoalDialog(context, user),
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.bar_chart, color: Colors.deepOrange),
+                  leading: const Icon(
+                    Icons.bar_chart,
+                    color: Colors.deepOrange,
+                  ),
                   title: const Text('Fitness Level'),
                   subtitle: Text(user.fitnessLevel.toUpperCase()),
                   trailing: const Icon(Icons.chevron_right),
@@ -124,16 +160,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.calendar_today, color: Colors.deepOrange),
+                  leading: const Icon(
+                    Icons.calendar_today,
+                    color: Colors.deepOrange,
+                  ),
                   title: const Text('Available Days'),
-                  subtitle: Text(user.availableWorkoutDays.isNotEmpty
-                      ? user.availableWorkoutDays.map((d) => d.substring(0, 3).toUpperCase()).join(', ')
-                      : 'Not configured'),
+                  subtitle: Text(
+                    user.availableWorkoutDays.isNotEmpty
+                        ? user.availableWorkoutDays
+                              .map((d) => d.substring(0, 3).toUpperCase())
+                              .join(', ')
+                        : 'Not configured',
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 20),
+
+          // Settings Card
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: ListTile(
+              leading: const Icon(
+                Icons.settings_outlined,
+                color: Colors.deepOrange,
+              ),
+              title: const Text(
+                'Settings',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text('Edit profile, view about & developer info'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
 
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
@@ -157,7 +226,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildAttrTile(String label, String value) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         const SizedBox(height: 4),
         Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
@@ -185,7 +257,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(ctx);
@@ -221,7 +296,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(ctx);
@@ -243,7 +321,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text('Log Out'),
         content: const Text('Are you sure you want to log out of FitTrack?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);

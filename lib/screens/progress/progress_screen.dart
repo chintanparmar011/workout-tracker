@@ -57,19 +57,25 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     children: [
                       const Text(
                         'Weight Journey',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       TextButton.icon(
                         icon: const Icon(Icons.add, size: 18),
                         label: const Text('Log Weight'),
-                        onPressed: () => _openLogWeightDialog(context, user?.uid ?? ''),
+                        onPressed: () =>
+                            _openLogWeightDialog(context, user?.uid ?? ''),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
 
                   Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -83,26 +89,43 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Current Weight', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                                    const Text(
+                                      'Current Weight',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ),
                                     Text(
                                       '${progressProvider.latestWeight!.toStringAsFixed(1)} kg',
-                                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),
                                 if (progressProvider.weightHistory.length >= 2)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 6,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: progressProvider.weightChange <= 0
                                           ? Colors.green.withValues(alpha: 0.1)
-                                          : Colors.orange.withValues(alpha: 0.1),
+                                          : Colors.orange.withValues(
+                                              alpha: 0.1,
+                                            ),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       '${progressProvider.weightChange > 0 ? "+" : ""}${progressProvider.weightChange.toStringAsFixed(1)} kg',
                                       style: TextStyle(
-                                        color: progressProvider.weightChange <= 0 ? Colors.green : Colors.orange,
+                                        color:
+                                            progressProvider.weightChange <= 0
+                                            ? Colors.green
+                                            : Colors.orange,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -118,14 +141,21 @@ class _ProgressScreenState extends State<ProgressScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.show_chart, size: 48, color: Colors.grey[300]),
+                                  Icon(
+                                    Icons.show_chart,
+                                    size: 48,
+                                    color: Colors.grey[300],
+                                  ),
                                   const SizedBox(height: 8),
                                   Text(
                                     progressProvider.weightHistory.isEmpty
                                         ? 'No weight records yet.\nTap "Log Weight" to start tracking.'
                                         : 'Log at least 2 entries to view your weight progression curve.',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 13,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -144,15 +174,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                     ),
                                   ),
                                   titlesData: FlTitlesData(
-                                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                    rightTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    topTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
                                     leftTitles: AxisTitles(
                                       sideTitles: SideTitles(
                                         showTitles: true,
                                         reservedSize: 36,
                                         getTitlesWidget: (val, meta) => Text(
                                           '${val.toInt()}',
-                                          style: TextStyle(color: Colors.grey[600], fontSize: 10),
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 10,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -162,12 +199,25 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                         interval: 1,
                                         getTitlesWidget: (val, meta) {
                                           final idx = val.toInt();
-                                          if (idx >= 0 && idx < progressProvider.weightHistory.length) {
+                                          if (idx >= 0 &&
+                                              idx <
+                                                  progressProvider
+                                                      .weightHistory
+                                                      .length) {
                                             return Padding(
-                                              padding: const EdgeInsets.only(top: 6),
+                                              padding: const EdgeInsets.only(
+                                                top: 6,
+                                              ),
                                               child: Text(
-                                                DateFormat('M/d').format(progressProvider.weightHistory[idx].date),
-                                                style: TextStyle(color: Colors.grey[600], fontSize: 10),
+                                                DateFormat('M/d').format(
+                                                  progressProvider
+                                                      .weightHistory[idx]
+                                                      .date,
+                                                ),
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 10,
+                                                ),
                                               ),
                                             );
                                           }
@@ -187,7 +237,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                       dotData: const FlDotData(show: true),
                                       belowBarData: BarAreaData(
                                         show: true,
-                                        color: Colors.deepOrange.withValues(alpha: 0.1),
+                                        color: Colors.deepOrange.withValues(
+                                          alpha: 0.1,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -244,7 +296,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       Expanded(
                         child: _buildStatTile(
                           label: 'Avg Completion',
-                          value: '${progressProvider.avgCompletion.toStringAsFixed(0)}%',
+                          value:
+                              '${progressProvider.avgCompletion.toStringAsFixed(0)}%',
                           icon: Icons.check_circle_outline,
                           color: Colors.green,
                         ),
@@ -290,16 +343,20 @@ class _ProgressScreenState extends State<ProgressScreen> {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          ),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
         ],
       ),
     );
   }
 
   void _openLogWeightDialog(BuildContext context, String userId) {
+    if (userId.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to log weight.')),
+      );
+      return;
+    }
+
     final weightController = TextEditingController();
 
     showDialog(
@@ -311,7 +368,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
           children: [
             TextField(
               controller: weightController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               autofocus: true,
               decoration: const InputDecoration(
                 labelText: 'Weight (kg)',
@@ -331,29 +390,48 @@ class _ProgressScreenState extends State<ProgressScreen> {
               final w = double.tryParse(weightController.text.trim());
               if (w == null || w < 20 || w > 300) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Enter a valid weight (20-300 kg)')),
+                  const SnackBar(
+                    content: Text('Enter a valid weight (20-300 kg)'),
+                  ),
                 );
                 return;
               }
 
               Navigator.pop(ctx);
-              final success = await context.read<ProgressProvider>().logWeight(
-                userId: userId,
-                weight: w,
-              );
+              try {
+                final progressProv = context.read<ProgressProvider>();
+                final success = await progressProv.logWeight(
+                  userId: userId,
+                  weight: w,
+                );
 
-              if (context.mounted) {
-                // Also update AuthProvider in-memory profile
-                final userProfile = context.read<AuthProvider>().userProfile;
-                if (userProfile != null) {
-                  context.read<AuthProvider>().updateUserProfile(
-                    userProfile.copyWith(currentWeight: w),
+                if (context.mounted) {
+                  // Also update AuthProvider in-memory profile safely
+                  final authProv = context.read<AuthProvider>();
+                  final userProfile = authProv.userProfile;
+                  if (userProfile != null) {
+                    authProv.updateUserProfile(
+                      userProfile.copyWith(currentWeight: w),
+                    );
+                  }
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'Weight logged: $w kg'
+                            : (progressProv.errorMessage ??
+                                  'Failed to save weight'),
+                      ),
+                    ),
                   );
                 }
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(success ? 'Weight logged: $w kg' : 'Failed to save weight')),
-                );
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error saving weight: $e')),
+                  );
+                }
               }
             },
             child: const Text('Save'),

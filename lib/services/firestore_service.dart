@@ -54,10 +54,16 @@ class FirestoreService {
     }
   }
 
-  Future<bool> updateUserProfile(String uid, Map<String, dynamic> updates) async {
+  Future<bool> updateUserProfile(
+    String uid,
+    Map<String, dynamic> updates,
+  ) async {
     try {
       updates['updatedAt'] = DateTime.now().toIso8601String();
-      await _usersRef.doc(uid).update(updates).timeout(const Duration(seconds: 10));
+      await _usersRef
+          .doc(uid)
+          .update(updates)
+          .timeout(const Duration(seconds: 10));
       return true;
     } catch (_) {
       return false;
@@ -66,7 +72,10 @@ class FirestoreService {
 
   // --- Strength & Workout Plans ---
 
-  Future<List<WorkoutPlanModel>> getWorkoutPlans(String goal, String level) async {
+  Future<List<WorkoutPlanModel>> getWorkoutPlans(
+    String goal,
+    String level,
+  ) async {
     try {
       final snapshot = await _plansRef
           .where('goal', isEqualTo: goal)
@@ -76,7 +85,12 @@ class FirestoreService {
 
       if (snapshot.docs.isNotEmpty) {
         return snapshot.docs
-            .map((doc) => WorkoutPlanModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+            .map(
+              (doc) => WorkoutPlanModel.fromMap(
+                doc.id,
+                doc.data() as Map<String, dynamic>,
+              ),
+            )
             .toList();
       }
     } catch (_) {
@@ -92,7 +106,9 @@ class FirestoreService {
 
   // --- Exercises ---
 
-  Future<List<ExerciseModel>> getExercisesByMuscleGroup(String muscleGroup) async {
+  Future<List<ExerciseModel>> getExercisesByMuscleGroup(
+    String muscleGroup,
+  ) async {
     try {
       final snapshot = await _exercisesRef
           .where('muscleGroup', isEqualTo: muscleGroup)
@@ -102,7 +118,12 @@ class FirestoreService {
 
       if (snapshot.docs.isNotEmpty) {
         return snapshot.docs
-            .map((doc) => ExerciseModel.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+            .map(
+              (doc) => ExerciseModel.fromMap(
+                doc.id,
+                doc.data() as Map<String, dynamic>,
+              ),
+            )
             .toList();
       }
     } catch (_) {
@@ -114,9 +135,15 @@ class FirestoreService {
 
   Future<ExerciseModel?> getExerciseById(String id) async {
     try {
-      final doc = await _exercisesRef.doc(id).get().timeout(const Duration(seconds: 5));
+      final doc = await _exercisesRef
+          .doc(id)
+          .get()
+          .timeout(const Duration(seconds: 5));
       if (doc.exists && doc.data() != null) {
-        return ExerciseModel.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+        return ExerciseModel.fromMap(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        );
       }
     } catch (_) {
       // Fallback
@@ -147,7 +174,12 @@ class FirestoreService {
       try {
         final chunks = <List<String>>[];
         for (var i = 0; i < missingIds.length; i += 10) {
-          chunks.add(missingIds.sublist(i, i + 10 > missingIds.length ? missingIds.length : i + 10));
+          chunks.add(
+            missingIds.sublist(
+              i,
+              i + 10 > missingIds.length ? missingIds.length : i + 10,
+            ),
+          );
         }
 
         for (final chunk in chunks) {
@@ -157,7 +189,9 @@ class FirestoreService {
               .timeout(const Duration(seconds: 6));
 
           for (final doc in snapshot.docs) {
-            results.add(ExerciseModel.fromMap(doc.id, doc.data() as Map<String, dynamic>));
+            results.add(
+              ExerciseModel.fromMap(doc.id, doc.data() as Map<String, dynamic>),
+            );
           }
         }
       } catch (_) {
@@ -170,7 +204,10 @@ class FirestoreService {
 
   // --- Workout Records ---
 
-  Future<bool> saveWorkoutRecord(String userId, WorkoutRecordModel record) async {
+  Future<bool> saveWorkoutRecord(
+    String userId,
+    WorkoutRecordModel record,
+  ) async {
     try {
       await _usersRef
           .doc(userId)
@@ -183,7 +220,10 @@ class FirestoreService {
     }
   }
 
-  Future<List<WorkoutRecordModel>> getWorkoutHistory(String userId, {int limit = 50}) async {
+  Future<List<WorkoutRecordModel>> getWorkoutHistory(
+    String userId, {
+    int limit = 50,
+  }) async {
     try {
       final snapshot = await _usersRef
           .doc(userId)
@@ -204,6 +244,7 @@ class FirestoreService {
   // --- Nutrition & Food Logs ---
 
   Future<bool> addFoodLog(String userId, FoodLogModel log) async {
+    if (userId.trim().isEmpty) return false;
     try {
       await _usersRef
           .doc(userId)
@@ -216,7 +257,11 @@ class FirestoreService {
     }
   }
 
-  Future<List<FoodLogModel>> getFoodLogsForDate(String userId, DateTime date) async {
+  Future<List<FoodLogModel>> getFoodLogsForDate(
+    String userId,
+    DateTime date,
+  ) async {
+    if (userId.trim().isEmpty) return [];
     try {
       final startOfDay = DateTime(date.year, date.month, date.day);
       final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
@@ -238,6 +283,7 @@ class FirestoreService {
   }
 
   Future<bool> deleteFoodLog(String userId, String logId) async {
+    if (userId.trim().isEmpty || logId.trim().isEmpty) return false;
     try {
       await _usersRef
           .doc(userId)
@@ -254,6 +300,7 @@ class FirestoreService {
   // --- Weight Records ---
 
   Future<bool> saveWeightRecord(String userId, WeightRecordModel record) async {
+    if (userId.trim().isEmpty) return false;
     try {
       await _usersRef
           .doc(userId)
@@ -261,11 +308,13 @@ class FirestoreService {
           .add(record.toMap())
           .timeout(const Duration(seconds: 10));
 
-      // Also update user profile currentWeight
-      await _usersRef.doc(userId).update({
-        'currentWeight': record.weight,
-        'updatedAt': DateTime.now().toIso8601String(),
-      });
+      // Safely attempt to update currentWeight on user profile
+      try {
+        await _usersRef.doc(userId).update({
+          'currentWeight': record.weight,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+      } catch (_) {}
 
       return true;
     } catch (_) {
@@ -274,6 +323,7 @@ class FirestoreService {
   }
 
   Future<List<WeightRecordModel>> getWeightHistory(String userId) async {
+    if (userId.trim().isEmpty) return [];
     try {
       final snapshot = await _usersRef
           .doc(userId)
@@ -300,7 +350,8 @@ class FirestoreService {
         goal: goal,
         fitnessLevel: level,
         muscleGroup: 'Chest',
-        description: 'Focus on chest activation, stability, and pushing strength.',
+        description:
+            'Focus on chest activation, stability, and pushing strength.',
         exerciseIds: ['pushup01', 'incline_pushup01', 'dumbbell_fly01'],
         estimatedDuration: 30,
       ),
@@ -310,7 +361,8 @@ class FirestoreService {
         goal: goal,
         fitnessLevel: level,
         muscleGroup: 'Back',
-        description: 'Complete back session targeting lat width and mid-back thickness.',
+        description:
+            'Complete back session targeting lat width and mid-back thickness.',
         exerciseIds: ['pullup01', 'lat_pulldown01', 'barbell_row01'],
         estimatedDuration: 35,
       ),
@@ -320,7 +372,8 @@ class FirestoreService {
         goal: goal,
         fitnessLevel: level,
         muscleGroup: 'Shoulders',
-        description: 'Develop full, 3D deltoid caps with overhead and lateral movements.',
+        description:
+            'Develop full, 3D deltoid caps with overhead and lateral movements.',
         exerciseIds: ['overhead_press01', 'lateral_raise01', 'pushup01'],
         estimatedDuration: 25,
       ),
@@ -330,8 +383,14 @@ class FirestoreService {
         goal: goal,
         fitnessLevel: level,
         muscleGroup: 'Biceps',
-        description: 'Antagonistic superset-style arms training for upper arm strength.',
-        exerciseIds: ['bicep_curl01', 'tricep_dips01', 'hammer_curl01', 'cable_pushdown01'],
+        description:
+            'Antagonistic superset-style arms training for upper arm strength.',
+        exerciseIds: [
+          'bicep_curl01',
+          'tricep_dips01',
+          'hammer_curl01',
+          'cable_pushdown01',
+        ],
         estimatedDuration: 30,
       ),
       WorkoutPlanModel(
@@ -340,7 +399,8 @@ class FirestoreService {
         goal: goal,
         fitnessLevel: level,
         muscleGroup: 'Legs',
-        description: 'Build powerful quads, hamstrings, and glutes with foundational squats and lunges.',
+        description:
+            'Build powerful quads, hamstrings, and glutes with foundational squats and lunges.',
         exerciseIds: ['squat01', 'barbell_squat01', 'lunges01'],
         estimatedDuration: 40,
       ),
@@ -350,7 +410,8 @@ class FirestoreService {
         goal: goal,
         fitnessLevel: level,
         muscleGroup: 'Abs/Core',
-        description: 'Isometric holds and dynamic contractions for trunk stability and abdominal endurance.',
+        description:
+            'Isometric holds and dynamic contractions for trunk stability and abdominal endurance.',
         exerciseIds: ['plank01', 'hanging_leg_raise01'],
         estimatedDuration: 20,
       ),
