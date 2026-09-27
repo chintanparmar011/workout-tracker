@@ -17,11 +17,15 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = context.read<AuthProvider>().user;
-      if (user != null) {
-        context.read<WorkoutProvider>().loadHistory(user.uid);
-      }
+      _refresh();
     });
+  }
+
+  Future<void> _refresh() async {
+    final user = context.read<AuthProvider>().user;
+    if (user != null) {
+      await context.read<WorkoutProvider>().loadHistory(user.uid);
+    }
   }
 
   @override
@@ -30,44 +34,62 @@ class _WorkoutHistoryScreenState extends State<WorkoutHistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Workout History')),
-      body: workoutProvider.isLoading
+      body: workoutProvider.isLoading && workoutProvider.workoutHistory.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : workoutProvider.workoutHistory.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.history, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No workouts recorded yet.',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            )
-          : ListView.separated(
-              itemCount: workoutProvider.workoutHistory.length,
-              padding: const EdgeInsets.all(16),
-              separatorBuilder: (context, index) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                final record = workoutProvider.workoutHistory[index];
-                return ActivityTile(
-                  title: 'Workout session', // Should ideally fetch plan name
-                  date: record.date,
-                  subtitle:
-                      '${record.durationMinutes} mins • ${record.exerciseRecords.length} exercises',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => WorkoutDetailsScreen(record: record),
+              ? RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView(
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.fitness_center, size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No workouts recorded yet.',
+                                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Start a workout to track your strength journey!',
+                                style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView.separated(
+                    itemCount: workoutProvider.workoutHistory.length,
+                    padding: const EdgeInsets.all(16),
+                    separatorBuilder: (context, index) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final record = workoutProvider.workoutHistory[index];
+                      return ActivityTile(
+                        title: record.workoutPlanName,
+                        date: record.date,
+                        subtitle:
+                            '${record.durationMinutes} mins • ${record.exerciseRecords.length} exercises • ${record.overallCompletionPercent.toStringAsFixed(0)}% completion',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => WorkoutDetailsScreen(record: record),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
     );
   }
 }

@@ -49,15 +49,17 @@ class _FitnessGoalScreenState extends State<FitnessGoalScreen> {
             const Text('What is your primary goal?'),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView(
-                children: _goals.map((goal) {
-                  return RadioListTile<String>(
-                    title: Text(goal['label']!),
-                    value: goal['value']!,
-                    groupValue: _selectedGoal,
-                    onChanged: (v) => setState(() => _selectedGoal = v),
-                  );
-                }).toList(),
+              child: RadioGroup<String>(
+                groupValue: _selectedGoal,
+                onChanged: (v) => setState(() => _selectedGoal = v),
+                child: ListView(
+                  children: _goals.map((goal) {
+                    return RadioListTile<String>(
+                      title: Text(goal['label']!),
+                      value: goal['value']!,
+                    );
+                  }).toList(),
+                ),
               ),
             ),
             ElevatedButton(onPressed: _next, child: const Text('Next')),

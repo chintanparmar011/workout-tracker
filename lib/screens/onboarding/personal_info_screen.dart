@@ -20,6 +20,15 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   String _gender = 'male';
 
   @override
+  void initState() {
+    super.initState();
+    final initialName = context.read<OnboardingProvider>().name;
+    if (initialName != null && initialName.isNotEmpty) {
+      _nameController.text = initialName;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _ageController.dispose();
@@ -68,8 +77,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Enter your age';
                   final age = int.tryParse(v);
-                  if (age == null || age < 10 || age > 100)
-                    return 'Enter a valid age';
+                  if (age == null || age < 10 || age > 100) {
+                    return 'Enter a valid age (10-100)';
+                  }
                   return null;
                 },
               ),
@@ -87,32 +97,28 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _heightController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(labelText: 'Height (cm)'),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Enter your height';
                   final h = double.tryParse(v);
-                  if (h == null || h < 100 || h > 250)
-                    return 'Enter a valid height';
+                  if (h == null || h < 100 || h > 250) {
+                    return 'Enter a valid height (100-250 cm)';
+                  }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _weightController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Current Weight (kg)',
-                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'Current Weight (kg)'),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Enter your weight';
                   final w = double.tryParse(v);
-                  if (w == null || w < 20 || w > 300)
-                    return 'Enter a valid weight';
+                  if (w == null || w < 20 || w > 300) {
+                    return 'Enter a valid weight (20-300 kg)';
+                  }
                   return null;
                 },
               ),

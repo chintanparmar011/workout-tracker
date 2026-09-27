@@ -99,17 +99,21 @@ class _FitnessLevelScreenState extends State<FitnessLevelScreen> {
         child: ListView(
           children: [
             const Text('Fitness Level'),
-            RadioListTile(
-              title: const Text('Beginner'),
-              value: 'beginner',
+            RadioGroup<String>(
               groupValue: _level,
               onChanged: (v) => setState(() => _level = v ?? 'beginner'),
-            ),
-            RadioListTile(
-              title: const Text('Intermediate'),
-              value: 'intermediate',
-              groupValue: _level,
-              onChanged: (v) => setState(() => _level = v ?? 'beginner'),
+              child: Column(
+                children: const [
+                  RadioListTile<String>(
+                    title: Text('Beginner'),
+                    value: 'beginner',
+                  ),
+                  RadioListTile<String>(
+                    title: Text('Intermediate'),
+                    value: 'intermediate',
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             const Text('Target Muscle Groups'),

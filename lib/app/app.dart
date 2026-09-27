@@ -9,6 +9,7 @@ import '../providers/onboarding_provider.dart';
 import '../screens/main_navigation_screen.dart';
 import '../providers/workout_provider.dart';
 import '../providers/progress_provider.dart';
+import '../providers/nutrition_provider.dart';
 
 class FitTrackApp extends StatelessWidget {
   const FitTrackApp({super.key});
@@ -21,6 +22,7 @@ class FitTrackApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProvider()),
         ChangeNotifierProvider(create: (_) => ProgressProvider()),
+        ChangeNotifierProvider(create: (_) => NutritionProvider()),
       ],
       child: MaterialApp(
         title: 'FitTrack',

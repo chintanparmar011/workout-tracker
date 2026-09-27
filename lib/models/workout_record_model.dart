@@ -2,26 +2,30 @@ class ActualSet {
   final int reps;
   final double weight;
 
-  ActualSet({required this.reps, this.weight = 0});
+  ActualSet({required this.reps, this.weight = 0.0});
 
   Map<String, dynamic> toMap() => {'reps': reps, 'weight': weight};
 
   factory ActualSet.fromMap(Map<String, dynamic> map) {
     return ActualSet(
-      reps: map['reps'] ?? 0,
-      weight: (map['weight'] as num?)?.toDouble() ?? 0,
+      reps: (map['reps'] as num?)?.toInt() ?? 0,
+      weight: (map['weight'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
 
 class ExerciseRecord {
   final String exerciseId;
+  final String exerciseName;
+  final String muscleGroup;
   final int targetSets;
   final int targetReps;
   final List<ActualSet> actualSets;
 
   ExerciseRecord({
     required this.exerciseId,
+    required this.exerciseName,
+    this.muscleGroup = '',
     required this.targetSets,
     required this.targetReps,
     required this.actualSets,
@@ -29,11 +33,15 @@ class ExerciseRecord {
 
   int get targetTotal => targetSets * targetReps;
   int get actualTotal => actualSets.fold(0, (sum, s) => sum + s.reps);
+  int get setsCompleted => actualSets.where((s) => s.reps > 0).length;
+
   double get completionPercent =>
-      targetTotal == 0 ? 0 : (actualTotal / targetTotal) * 100;
+      targetTotal == 0 ? 0 : ((actualTotal / targetTotal) * 100).clamp(0, 100);
 
   Map<String, dynamic> toMap() => {
     'exerciseId': exerciseId,
+    'exerciseName': exerciseName,
+    'muscleGroup': muscleGroup,
     'targetSets': targetSets,
     'targetReps': targetReps,
     'actualSets': actualSets.map((s) => s.toMap()).toList(),
@@ -42,8 +50,10 @@ class ExerciseRecord {
   factory ExerciseRecord.fromMap(Map<String, dynamic> map) {
     return ExerciseRecord(
       exerciseId: map['exerciseId'] ?? '',
-      targetSets: map['targetSets'] ?? 0,
-      targetReps: map['targetReps'] ?? 0,
+      exerciseName: map['exerciseName'] ?? map['exerciseId'] ?? 'Exercise',
+      muscleGroup: map['muscleGroup'] ?? '',
+      targetSets: (map['targetSets'] as num?)?.toInt() ?? 0,
+      targetReps: (map['targetReps'] as num?)?.toInt() ?? 0,
       actualSets: (map['actualSets'] as List<dynamic>? ?? [])
           .map((e) => ActualSet.fromMap(e as Map<String, dynamic>))
           .toList(),
@@ -54,6 +64,7 @@ class ExerciseRecord {
 class WorkoutRecordModel {
   final String id;
   final String workoutPlanId;
+  final String workoutPlanName;
   final DateTime date;
   final int durationMinutes;
   final List<ExerciseRecord> exerciseRecords;
@@ -62,26 +73,57 @@ class WorkoutRecordModel {
   WorkoutRecordModel({
     required this.id,
     required this.workoutPlanId,
+    this.workoutPlanName = 'Workout Session',
     required this.date,
     required this.durationMinutes,
     required this.exerciseRecords,
     this.notes,
   });
 
+  int get totalExercises => exerciseRecords.length;
+
+  int get totalSetsTarget =>
+      exerciseRecords.fold(0, (sum, e) => sum + e.targetSets);
+
+  int get totalSetsCompleted =>
+      exerciseRecords.fold(0, (sum, e) => sum + e.setsCompleted);
+
+  int get totalTargetReps =>
+      exerciseRecords.fold(0, (sum, e) => sum + e.targetTotal);
+
+  int get totalActualReps =>
+      exerciseRecords.fold(0, (sum, e) => sum + e.actualTotal);
+
   double get overallCompletionPercent {
-    if (exerciseRecords.isEmpty) return 0;
-    final total = exerciseRecords.fold<double>(
-      0,
-      (sum, e) => sum + e.completionPercent,
-    );
-    return total / exerciseRecords.length;
+    if (totalTargetReps == 0) return 0;
+    return ((totalActualReps / totalTargetReps) * 100).clamp(0, 100);
+  }
+
+  /// Rule-based feedback according to document specification (Section 15):
+  /// - Completion >= 90% -> "Excellent performance."
+  /// - Completion 70-89% -> "Good progress. Keep working consistently."
+  /// - Completion < 70%  -> "Try focusing on completing the prescribed sets."
+  String get ruleBasedFeedback {
+    final pct = overallCompletionPercent;
+    if (pct >= 90.0) {
+      return 'Excellent performance! You hit nearly all of your targets.';
+    } else if (pct >= 70.0) {
+      return 'Good progress. Keep working consistently to hit full reps.';
+    } else {
+      return 'Good effort! Try focusing on completing the prescribed sets next time.';
+    }
   }
 
   Map<String, dynamic> toMap() => {
     'workoutPlanId': workoutPlanId,
+    'workoutPlanName': workoutPlanName,
     'date': date.toIso8601String(),
     'durationMinutes': durationMinutes,
     'exerciseRecords': exerciseRecords.map((e) => e.toMap()).toList(),
+    'totalTargetReps': totalTargetReps,
+    'totalActualReps': totalActualReps,
+    'completionPercentage': overallCompletionPercent,
+    'feedback': ruleBasedFeedback,
     'notes': notes,
   };
 
@@ -89,8 +131,9 @@ class WorkoutRecordModel {
     return WorkoutRecordModel(
       id: id,
       workoutPlanId: map['workoutPlanId'] ?? '',
+      workoutPlanName: map['workoutPlanName'] ?? 'Workout Session',
       date: DateTime.tryParse(map['date'] ?? '') ?? DateTime.now(),
-      durationMinutes: map['durationMinutes'] ?? 0,
+      durationMinutes: (map['durationMinutes'] as num?)?.toInt() ?? 0,
       exerciseRecords: (map['exerciseRecords'] as List<dynamic>? ?? [])
           .map((e) => ExerciseRecord.fromMap(e as Map<String, dynamic>))
           .toList(),

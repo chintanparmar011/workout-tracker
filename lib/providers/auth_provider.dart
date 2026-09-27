@@ -6,26 +6,43 @@ import '../models/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
 
   User? _user;
+  UserModel? _userProfile;
   bool _isLoading = false;
-  bool _isInitializing = true; // NEW
+  bool _isInitializing = true;
+  bool _isCheckingProfile = false;
   String? _errorMessage;
 
   User? get user => _user;
+  UserModel? get userProfile => _userProfile;
   bool get isLoading => _isLoading;
-  bool get isInitializing => _isInitializing; // NEW
+  bool get isInitializing => _isInitializing;
+  bool get isCheckingProfile => _isCheckingProfile;
   String? get errorMessage => _errorMessage;
   bool get isLoggedIn => _user != null;
   bool get isEmailVerified => _authService.isEmailVerified;
-
-  final FirestoreService _firestoreService = FirestoreService();
-  UserModel? _userProfile;
-  bool _isCheckingProfile = false;
-
-  UserModel? get userProfile => _userProfile;
-  bool get isCheckingProfile => _isCheckingProfile;
   bool get hasCompletedOnboarding => _userProfile != null;
+
+  AuthProvider() {
+    _authService.authStateChanges.listen((user) async {
+      _user = user;
+      _isInitializing = false;
+      notifyListeners();
+
+      if (user != null && user.emailVerified) {
+        await checkUserProfile();
+      } else if (user == null) {
+        _userProfile = null;
+        notifyListeners();
+      }
+    });
+  }
+
+  void _clearError() {
+    _errorMessage = null;
+  }
 
   Future<void> checkUserProfile() async {
     if (_user == null) return;
@@ -39,20 +56,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  AuthProvider() {
-    _authService.authStateChanges.listen((user) async {
-      _user = user;
-      _isInitializing = false;
+  Future<bool> updateUserProfile(UserModel updated) async {
+    _userProfile = updated;
+    notifyListeners();
+
+    final result = await _firestoreService.saveUserProfile(updated);
+    if (!result.isSuccess) {
+      _errorMessage = result.errorMessage;
       notifyListeners();
-
-      if (user != null && user.emailVerified) {
-        await checkUserProfile();
-      }
-    });
-  }
-
-  void _clearError() {
-    _errorMessage = null;
+      return false;
+    }
+    return true;
   }
 
   Future<bool> signUp(String email, String password) async {
@@ -75,14 +89,15 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> checkEmailVerified() async {
+    final wasVerified = _authService.isEmailVerified;
     await _authService.reloadUser();
     final updatedUser = FirebaseAuth.instance.currentUser;
     _user = updatedUser;
 
-    if (_user != null && _user!.emailVerified && !hasCompletedOnboarding) {
+    if (_user != null && _user!.emailVerified && !wasVerified) {
       await checkUserProfile();
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   Future<bool> sendPasswordResetEmail(String email) async {
@@ -128,25 +143,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> signInWithDemo() async {
-    const email = 'demo@fittracker.com';
-    const pass = 'demo123456';
-
-    bool success = await signIn(email, pass);
-
-    if (!success &&
-        _errorMessage != null &&
-        (_errorMessage!.contains('Incorrect email or password') ||
-            _errorMessage!.contains('user-not-found'))) {
-      success = await signUp(email, pass);
-    }
-
-    return success;
-  }
-
   Future<void> signOut() async {
     await _authService.signOut();
     _user = null;
+    _userProfile = null;
+    _errorMessage = null;
     notifyListeners();
   }
 }
