@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/nutrition_provider.dart';
+import '../../models/user_model.dart';
+import '../../models/food_log_model.dart';
 
 class NutritionScreen extends StatefulWidget {
   const NutritionScreen({super.key});
@@ -55,6 +57,7 @@ class _NutritionScreenState extends State<NutritionScreen>
         children: [const _DailyTrackerTab(), const _DietPlansTab()],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'nutrition_log_food_fab',
         onPressed: () => _openAddFoodDialog(context),
         icon: const Icon(Icons.add),
         label: const Text('Log Food'),
@@ -103,7 +106,15 @@ class _DailyTrackerTab extends StatelessWidget {
         .clamp(0, 9999)
         .toDouble();
 
-    final isToday = DateUtils.isSameDay(nutrition.selectedDate, DateTime.now());
+    final today = DateUtils.dateOnly(DateTime.now());
+    final accountCreatedAt = user != null
+        ? DateUtils.dateOnly(user.createdAt)
+        : today.subtract(const Duration(days: 365));
+    final currentDate = DateUtils.dateOnly(nutrition.selectedDate);
+
+    final canGoForward = currentDate.isBefore(today);
+    final canGoBack = currentDate.isAfter(accountCreatedAt);
+    final isToday = DateUtils.isSameDay(currentDate, today);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -114,38 +125,113 @@ class _DailyTrackerTab extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Date Selector
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () {
-                  final prev = nutrition.selectedDate.subtract(
-                    const Duration(days: 1),
-                  );
-                  nutrition.changeDate(currentUserId, prev);
-                },
-              ),
-              Text(
-                isToday
-                    ? 'Today, ${DateFormat('MMM d').format(nutrition.selectedDate)}'
-                    : DateFormat('EEE, MMM d').format(nutrition.selectedDate),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          // Date Selector & History Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  tooltip: canGoBack ? 'Previous Day' : 'Reached account creation date',
+                  onPressed: canGoBack
+                      ? () {
+                          final prev = currentDate.subtract(const Duration(days: 1));
+                          nutrition.changeDate(
+                            currentUserId,
+                            prev,
+                            minDate: accountCreatedAt,
+                            maxDate: today,
+                          );
+                        }
+                      : null,
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () {
-                  final next = nutrition.selectedDate.add(
-                    const Duration(days: 1),
-                  );
-                  nutrition.changeDate(currentUserId, next);
-                },
-              ),
-            ],
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: currentDate.isAfter(today)
+                          ? today
+                          : (currentDate.isBefore(accountCreatedAt)
+                              ? accountCreatedAt
+                              : currentDate),
+                      firstDate: accountCreatedAt,
+                      lastDate: today,
+                      helpText: 'SELECT INTAKE DATE',
+                    );
+                    if (picked != null) {
+                      nutrition.changeDate(
+                        currentUserId,
+                        picked,
+                        minDate: accountCreatedAt,
+                        maxDate: today,
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: isToday ? Colors.deepOrange : Colors.grey[700],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isToday
+                              ? 'Today, ${DateFormat('MMM d').format(currentDate)}'
+                              : DateFormat('EEE, MMM d').format(currentDate),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: isToday ? Colors.deepOrange : Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.history),
+                      tooltip: 'Calorie Intake History',
+                      onPressed: () => _openHistorySheet(
+                        context,
+                        currentUserId,
+                        user,
+                        targetCalories,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      tooltip: canGoForward
+                          ? 'Next Day'
+                          : 'Cannot navigate beyond today',
+                      onPressed: canGoForward
+                          ? () {
+                              final next = currentDate.add(const Duration(days: 1));
+                              nutrition.changeDate(
+                                currentUserId,
+                                next,
+                                minDate: accountCreatedAt,
+                                maxDate: today,
+                              );
+                            }
+                          : null,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -741,6 +827,286 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+void _openHistorySheet(
+  BuildContext context,
+  String userId,
+  UserModel? user,
+  int targetCalories,
+) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) => _CalorieHistorySheet(
+      userId: userId,
+      user: user,
+      targetCalories: targetCalories,
+    ),
+  );
+}
+
+class _CalorieHistorySheet extends StatefulWidget {
+  final String userId;
+  final UserModel? user;
+  final int targetCalories;
+
+  const _CalorieHistorySheet({
+    required this.userId,
+    required this.user,
+    required this.targetCalories,
+  });
+
+  @override
+  State<_CalorieHistorySheet> createState() => _CalorieHistorySheetState();
+}
+
+class _CalorieHistorySheetState extends State<_CalorieHistorySheet> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.userId.isNotEmpty) {
+        context.read<NutritionProvider>().loadFoodHistory(widget.userId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nutrition = context.watch<NutritionProvider>();
+    final today = DateUtils.dateOnly(DateTime.now());
+    final accountCreatedAt = widget.user != null
+        ? DateUtils.dateOnly(widget.user!.createdAt)
+        : today.subtract(const Duration(days: 30));
+
+    // Group history logs by date
+    final Map<DateTime, List<FoodLogModel>> logsByDate = {};
+    for (final log in nutrition.historyLogs) {
+      final dateKey = DateUtils.dateOnly(log.date);
+      // Strictly ignore future dates and dates prior to account creation
+      if (!dateKey.isAfter(today) && !dateKey.isBefore(accountCreatedAt)) {
+        logsByDate.putIfAbsent(dateKey, () => []).add(log);
+      }
+    }
+
+    // Build list of all dates from today backwards to accountCreatedAt (up to 45 days)
+    final List<DateTime> dateRange = [];
+    var cur = today;
+    while (!cur.isBefore(accountCreatedAt) && dateRange.length < 45) {
+      dateRange.add(cur);
+      cur = cur.subtract(const Duration(days: 1));
+    }
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (ctx, scrollController) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Calorie Intake History',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${DateFormat('MMM d').format(accountCreatedAt)} - ${DateFormat('MMM d').format(today)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Only showing dates from account creation to today (${widget.targetCalories} kcal daily target)',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+              const Divider(height: 24),
+              Expanded(
+                child: nutrition.isHistoryLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: dateRange.length,
+                        itemBuilder: (context, index) {
+                          final date = dateRange[index];
+                          final logs = logsByDate[date] ?? [];
+                          final dayCalories = logs.fold<double>(
+                            0.0,
+                            (sum, l) => sum + (l.calories * l.quantity),
+                          );
+                          final dayProtein = logs.fold<double>(
+                            0.0,
+                            (sum, l) => sum + (l.protein * l.quantity),
+                          );
+                          final isCurrentDay = DateUtils.isSameDay(
+                            date,
+                            nutrition.selectedDate,
+                          );
+                          final isToday = DateUtils.isSameDay(date, today);
+
+                          final double progress = widget.targetCalories > 0
+                              ? (dayCalories / widget.targetCalories)
+                                  .clamp(0.0, 1.0)
+                              : 0.0;
+
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: isCurrentDay
+                                    ? Colors.deepOrange
+                                    : Colors.grey.shade200,
+                                width: isCurrentDay ? 1.5 : 1,
+                              ),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                nutrition.changeDate(
+                                  widget.userId,
+                                  date,
+                                  minDate: accountCreatedAt,
+                                  maxDate: today,
+                                );
+                                Navigator.pop(ctx);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              isToday
+                                                  ? 'Today (${DateFormat('MMM d').format(date)})'
+                                                  : DateFormat('EEEE, MMM d')
+                                                      .format(date),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                                color: isToday
+                                                    ? Colors.deepOrange
+                                                    : Colors.black87,
+                                              ),
+                                            ),
+                                            if (isCurrentDay) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.deepOrange
+                                                      .withValues(alpha: 0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                child: const Text(
+                                                  'SELECTED',
+                                                  style: TextStyle(
+                                                    color: Colors.deepOrange,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        Text(
+                                          '${dayCalories.toStringAsFixed(0)} / ${widget.targetCalories} kcal',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: dayCalories > 0
+                                                ? Colors.black87
+                                                : Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: LinearProgressIndicator(
+                                        value: progress,
+                                        backgroundColor: Colors.grey[200],
+                                        color: progress >= 1.0
+                                            ? Colors.green
+                                            : Colors.deepOrange,
+                                        minHeight: 6,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          logs.isEmpty
+                                              ? 'No meals logged'
+                                              : '${logs.length} item${logs.length > 1 ? 's' : ''} logged • ${dayProtein.toStringAsFixed(0)}g protein',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const Text(
+                                          'View details →',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.deepOrange,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

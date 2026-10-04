@@ -5,6 +5,8 @@ import '../models/workout_model.dart';
 import '../models/workout_record_model.dart';
 import '../models/food_log_model.dart';
 import '../models/weight_record_model.dart';
+import '../models/running_session_model.dart';
+import '../models/ai_message_model.dart';
 import 'exercise_service.dart';
 
 class FirestoreResult {
@@ -17,8 +19,16 @@ class FirestoreResult {
 }
 
 class FirestoreService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final ExerciseService _exerciseService = ExerciseService();
+  final FirebaseFirestore? _customDb;
+  final ExerciseService _exerciseService;
+
+  FirestoreService({
+    FirebaseFirestore? firestore,
+    ExerciseService? exerciseService,
+  })  : _customDb = firestore,
+        _exerciseService = exerciseService ?? ExerciseService();
+
+  FirebaseFirestore get _db => _customDb ?? FirebaseFirestore.instance;
 
   CollectionReference get _usersRef => _db.collection('users');
   CollectionReference get _plansRef => _db.collection('workout_plans');
@@ -102,6 +112,60 @@ class FirestoreService {
     // Asynchronously try seeding to Firestore so future reads work seamlessly
     _trySeedWorkoutPlans(defaults);
     return defaults;
+  }
+
+  // --- Custom Workout Plans ---
+
+  Future<bool> saveCustomWorkoutPlan(
+    String userId,
+    WorkoutPlanModel plan,
+  ) async {
+    try {
+      await _usersRef
+          .doc(userId)
+          .collection('custom_workout_plans')
+          .doc(plan.id)
+          .set(plan.toMap())
+          .timeout(const Duration(seconds: 10));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<List<WorkoutPlanModel>> getCustomWorkoutPlans(String userId) async {
+    try {
+      final snapshot = await _usersRef
+          .doc(userId)
+          .collection('custom_workout_plans')
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      return snapshot.docs
+          .map(
+            (doc) => WorkoutPlanModel.fromMap(
+              doc.id,
+              doc.data(),
+            ),
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<bool> deleteCustomWorkoutPlan(String userId, String planId) async {
+    try {
+      await _usersRef
+          .doc(userId)
+          .collection('custom_workout_plans')
+          .doc(planId)
+          .delete()
+          .timeout(const Duration(seconds: 10));
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   // --- Exercises ---
@@ -297,6 +361,90 @@ class FirestoreService {
     }
   }
 
+  Future<List<FoodLogModel>> getAllFoodLogs(
+    String userId, {
+    int limit = 200,
+  }) async {
+    if (userId.trim().isEmpty) return [];
+    try {
+      final snapshot = await _usersRef
+          .doc(userId)
+          .collection('food_logs')
+          .orderBy('date', descending: true)
+          .limit(limit)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      return snapshot.docs
+          .map((doc) => FoodLogModel.fromMap(doc.id, doc.data()))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // --- AI Fitness Coach Chat History ---
+
+  Future<bool> saveAiChatMessage(
+    String userId,
+    AiMessageModel message,
+  ) async {
+    if (userId.trim().isEmpty || userId == 'guest') return false;
+    try {
+      await _usersRef
+          .doc(userId)
+          .collection('ai_chat_history')
+          .doc(message.id)
+          .set(message.toMap())
+          .timeout(const Duration(seconds: 8));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<List<AiMessageModel>> getAiChatHistory(
+    String userId, {
+    int limit = 50,
+  }) async {
+    if (userId.trim().isEmpty || userId == 'guest') return [];
+    try {
+      final snapshot = await _usersRef
+          .doc(userId)
+          .collection('ai_chat_history')
+          .orderBy('timestamp', descending: false)
+          .limitToLast(limit)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      return snapshot.docs
+          .map((doc) => AiMessageModel.fromMap(doc.data()))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<bool> clearAiChatHistory(String userId) async {
+    if (userId.trim().isEmpty || userId == 'guest') return false;
+    try {
+      final snapshot = await _usersRef
+          .doc(userId)
+          .collection('ai_chat_history')
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      final batch = _db.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // --- Weight Records ---
 
   Future<bool> saveWeightRecord(String userId, WeightRecordModel record) async {
@@ -334,6 +482,43 @@ class FirestoreService {
 
       return snapshot.docs
           .map((doc) => WeightRecordModel.fromMap(doc.id, doc.data()))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // --- Running Sessions ---
+
+  Future<bool> saveRunningSession(
+    String userId,
+    RunningSessionModel session,
+  ) async {
+    if (userId.trim().isEmpty) return false;
+    try {
+      await _usersRef
+          .doc(userId)
+          .collection('running_sessions')
+          .add(session.toMap())
+          .timeout(const Duration(seconds: 12));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<List<RunningSessionModel>> getRunningHistory(String userId) async {
+    if (userId.trim().isEmpty) return [];
+    try {
+      final snapshot = await _usersRef
+          .doc(userId)
+          .collection('running_sessions')
+          .orderBy('startTime', descending: true)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      return snapshot.docs
+          .map((doc) => RunningSessionModel.fromMap(doc.id, doc.data()))
           .toList();
     } catch (_) {
       return [];

@@ -10,6 +10,7 @@ class WorkoutProvider extends ChangeNotifier {
   final ExerciseService _exerciseService = ExerciseService();
 
   List<WorkoutPlanModel> _availablePlans = [];
+  List<WorkoutPlanModel> _customPlans = [];
   List<WorkoutRecordModel> _workoutHistory = [];
   List<ExerciseModel> _muscleGroupExercises = [];
   bool _isLoading = false;
@@ -17,6 +18,7 @@ class WorkoutProvider extends ChangeNotifier {
   String? _errorMessage;
 
   List<WorkoutPlanModel> get availablePlans => _availablePlans;
+  List<WorkoutPlanModel> get customPlans => _customPlans;
   List<WorkoutRecordModel> get workoutHistory => _workoutHistory;
   List<ExerciseModel> get muscleGroupExercises => _muscleGroupExercises;
   bool get isLoading => _isLoading;
@@ -42,7 +44,10 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   int get totalActiveTargetReps {
-    return _activeExercises.fold(0, (sum, e) => sum + (e.targetSets * e.targetReps));
+    return _activeExercises.fold(
+      0,
+      (sum, e) => sum + (e.targetSets * e.targetReps),
+    );
   }
 
   int get totalActiveActualReps {
@@ -57,7 +62,10 @@ class WorkoutProvider extends ChangeNotifier {
 
   double get currentCompletionPercent {
     if (totalActiveTargetReps == 0) return 0;
-    return ((totalActiveActualReps / totalActiveTargetReps) * 100).clamp(0, 100);
+    return ((totalActiveActualReps / totalActiveTargetReps) * 100).clamp(
+      0,
+      100,
+    );
   }
 
   Future<void> loadPlans(String goal, String level) async {
@@ -89,12 +97,42 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> loadCustomPlans(String userId) async {
+    try {
+      _customPlans = await _firestoreService.getCustomWorkoutPlans(userId);
+      notifyListeners();
+    } catch (_) {
+      // Keep existing custom plans on error
+    }
+  }
+
+  Future<bool> saveCustomPlan(String userId, WorkoutPlanModel plan) async {
+    final success = await _firestoreService.saveCustomWorkoutPlan(userId, plan);
+    if (success) {
+      _customPlans.removeWhere((p) => p.id == plan.id);
+      _customPlans.insert(0, plan);
+      notifyListeners();
+    }
+    return success;
+  }
+
+  Future<bool> deleteCustomPlan(String userId, String planId) async {
+    final success = await _firestoreService.deleteCustomWorkoutPlan(userId, planId);
+    if (success) {
+      _customPlans.removeWhere((p) => p.id == planId);
+      notifyListeners();
+    }
+    return success;
+  }
+
   Future<void> loadExercisesForMuscle(String muscleGroup) async {
     _isMuscleLoading = true;
     notifyListeners();
 
     try {
-      _muscleGroupExercises = await _exerciseService.getExercisesByMuscleGroup(muscleGroup);
+      _muscleGroupExercises = await _exerciseService.getExercisesByMuscleGroup(
+        muscleGroup,
+      );
     } catch (_) {
       _muscleGroupExercises = [];
     } finally {
@@ -114,7 +152,10 @@ class WorkoutProvider extends ChangeNotifier {
     await fetchExercisesForPlan();
   }
 
-  Future<void> startCustomWorkout(String title, List<ExerciseModel> exercises) async {
+  Future<void> startCustomWorkout(
+    String title,
+    List<ExerciseModel> exercises,
+  ) async {
     _activePlan = WorkoutPlanModel(
       id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
       name: title,
@@ -139,7 +180,9 @@ class WorkoutProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _activeExercises = await _firestoreService.getExercisesByIds(_activePlan!.exerciseIds);
+      _activeExercises = await _firestoreService.getExercisesByIds(
+        _activePlan!.exerciseIds,
+      );
       // Fallback if none returned
       if (_activeExercises.isEmpty) {
         _activeExercises = _exerciseService
@@ -164,7 +207,8 @@ class WorkoutProvider extends ChangeNotifier {
   }
 
   void removeLastSet(String exerciseId) {
-    if (_progress.containsKey(exerciseId) && _progress[exerciseId]!.isNotEmpty) {
+    if (_progress.containsKey(exerciseId) &&
+        _progress[exerciseId]!.isNotEmpty) {
       _progress[exerciseId]!.removeLast();
       notifyListeners();
     }

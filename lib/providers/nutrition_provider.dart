@@ -10,17 +10,21 @@ class NutritionProvider extends ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
   final NutritionService _nutritionService = NutritionService();
 
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateUtils.dateOnly(DateTime.now());
   List<FoodLogModel> _dailyLogs = [];
+  List<FoodLogModel> _historyLogs = [];
   List<FoodModel> _searchResults = [];
   bool _isLoading = false;
+  bool _isHistoryLoading = false;
   bool _isSearching = false;
   String? _errorMessage;
 
   DateTime get selectedDate => _selectedDate;
   List<FoodLogModel> get dailyLogs => _dailyLogs;
+  List<FoodLogModel> get historyLogs => _historyLogs;
   List<FoodModel> get searchResults => _searchResults;
   bool get isLoading => _isLoading;
+  bool get isHistoryLoading => _isHistoryLoading;
   bool get isSearching => _isSearching;
   String? get errorMessage => _errorMessage;
 
@@ -97,10 +101,40 @@ class NutritionProvider extends ChangeNotifier {
     return remaining > 0 ? remaining : 0.0;
   }
 
-  Future<void> changeDate(String userId, DateTime newDate) async {
-    _selectedDate = newDate;
+  Future<void> changeDate(
+    String userId,
+    DateTime newDate, {
+    DateTime? minDate,
+    DateTime? maxDate,
+  }) async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final effectiveMax = maxDate != null ? DateUtils.dateOnly(maxDate) : today;
+    final effectiveMin = minDate != null
+        ? DateUtils.dateOnly(minDate)
+        : today.subtract(const Duration(days: 365));
+
+    var clamped = DateUtils.dateOnly(newDate);
+    if (clamped.isAfter(effectiveMax)) clamped = effectiveMax;
+    if (clamped.isBefore(effectiveMin)) clamped = effectiveMin;
+
+    _selectedDate = clamped;
     notifyListeners();
-    await loadDailyLogs(userId, newDate);
+    await loadDailyLogs(userId, clamped);
+  }
+
+  Future<void> loadFoodHistory(String userId) async {
+    if (userId.trim().isEmpty) return;
+    _isHistoryLoading = true;
+    notifyListeners();
+
+    try {
+      _historyLogs = await _firestoreService.getAllFoodLogs(userId, limit: 300);
+    } catch (_) {
+      _historyLogs = [];
+    } finally {
+      _isHistoryLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> loadDailyLogs(String userId, [DateTime? date]) async {

@@ -5,6 +5,7 @@ import '../../providers/workout_provider.dart';
 import '../../models/workout_model.dart';
 import '../../models/exercise_model.dart';
 import 'active_workout_screen.dart';
+import 'create_custom_plan_screen.dart';
 
 class StrengthScreen extends StatefulWidget {
   const StrengthScreen({super.key});
@@ -32,6 +33,9 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<AuthProvider>().userProfile;
@@ -39,6 +43,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
 
       if (user != null) {
         workoutProvider.loadPlans(user.fitnessGoal, user.fitnessLevel);
+        workoutProvider.loadCustomPlans(user.uid);
       } else {
         workoutProvider.loadPlans('build_muscle', 'beginner');
       }
@@ -71,6 +76,28 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
           ],
         ),
       ),
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton.extended(
+              heroTag: 'strength_create_plan_fab',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CreateCustomPlanScreen(),
+                  ),
+                );
+              },
+              backgroundColor: Colors.deepOrange,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text(
+                'Create Plan',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -85,112 +112,366 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
     final filteredPlans = _selectedMuscleGroup == null
         ? workoutProvider.availablePlans
         : workoutProvider.availablePlans
-            .where((p) => p.muscleGroup.toLowerCase() == _selectedMuscleGroup!.toLowerCase())
+            .where(
+              (p) =>
+                  p.muscleGroup.toLowerCase() ==
+                  _selectedMuscleGroup!.toLowerCase(),
+            )
             .toList();
 
-    return Column(
-      children: [
-        // Muscle Group Selector
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  label: const Text('All'),
-                  selected: _selectedMuscleGroup == null,
-                  onSelected: (_) => setState(() => _selectedMuscleGroup = null),
+    final customPlans = workoutProvider.customPlans;
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        final user = context.read<AuthProvider>().userProfile;
+        if (user != null) {
+          await workoutProvider.loadPlans(user.fitnessGoal, user.fitnessLevel);
+          await workoutProvider.loadCustomPlans(user.uid);
+        }
+      },
+      child: ListView(
+        padding: const EdgeInsets.only(bottom: 80),
+        children: [
+          // Banner: Create Custom Workout
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CreateCustomPlanScreen(),
                 ),
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.deepOrange, Colors.orange.shade700],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.deepOrange.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              ..._muscleGroups.map(
-                (group) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(group),
-                    selected: _selectedMuscleGroup == group,
-                    onSelected: (selected) {
-                      setState(() => _selectedMuscleGroup = selected ? group : null);
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 26),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Create Custom Workout Plan',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Pick exercises & tailor your routine',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // User Custom Plans Section (if any exist)
+          if (customPlans.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'My Custom Plans (${customPlans.length})',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreateCustomPlanScreen(),
+                        ),
+                      );
                     },
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('New'),
+                  ),
+                ],
+              ),
+            ),
+            ...customPlans.map((plan) {
+              return Card(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Colors.deepOrange.withValues(alpha: 0.4),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: workoutProvider.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : filteredPlans.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.fitness_center, size: 54, color: Colors.grey[400]),
-                          const SizedBox(height: 12),
-                          const Text('No workout plans found for this group.'),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: () {
-                              final user = context.read<AuthProvider>().userProfile;
-                              workoutProvider.loadPlans(
-                                user?.fitnessGoal ?? 'build_muscle',
-                                user?.fitnessLevel ?? 'beginner',
-                              );
-                            },
-                            child: const Text('Reload Plans'),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => _startWorkoutDialog(plan),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Colors.deepOrange.withValues(
+                            alpha: 0.15,
                           ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filteredPlans.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      itemBuilder: (context, index) {
-                        final plan = filteredPlans[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () => _startWorkoutDialog(plan),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Row(
+                          child: const Icon(
+                            Icons.stars,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.deepOrange.withValues(alpha: 0.1),
-                                    child: const Icon(Icons.fitness_center, color: Colors.deepOrange),
-                                  ),
-                                  const SizedBox(width: 14),
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          plan.name,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${plan.exerciseIds.length} exercises • ~${plan.estimatedDuration} mins',
-                                          style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                                        ),
-                                      ],
+                                    child: Text(
+                                      plan.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ),
-                                  const Icon(Icons.play_circle_fill, color: Colors.deepOrange, size: 32),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.deepOrange.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'CUSTOM',
+                                      style: TextStyle(
+                                        color: Colors.deepOrange,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${plan.exerciseIds.length} exercises • ~${plan.estimatedDuration} mins • ${plan.muscleGroup}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.grey,
+                          ),
+                          tooltip: 'Delete custom plan',
+                          onPressed: () => _confirmDeleteCustomPlan(plan),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.play_circle_fill,
+                            color: Colors.deepOrange,
+                            size: 32,
+                          ),
+                          tooltip: 'Start workout',
+                          onPressed: () => _startWorkoutDialog(plan),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+            const Divider(height: 32, indent: 16, endIndent: 16),
+          ],
+
+          // Curated Plans Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: const Text(
+              'Curated Workout Plans',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+          ),
+
+          // Muscle Group Selector
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: const Text('All'),
+                    selected: _selectedMuscleGroup == null,
+                    onSelected: (_) =>
+                        setState(() => _selectedMuscleGroup = null),
+                  ),
+                ),
+                ..._muscleGroups.map(
+                  (group) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(group),
+                      selected: _selectedMuscleGroup == group,
+                      onSelected: (selected) {
+                        setState(
+                          () => _selectedMuscleGroup = selected ? group : null,
                         );
                       },
                     ),
-        ),
-      ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (workoutProvider.isLoading)
+            const Padding(
+              padding: EdgeInsets.all(40),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (filteredPlans.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.fitness_center,
+                      size: 54,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('No workout plans found for this group.'),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        final user = context.read<AuthProvider>().userProfile;
+                        workoutProvider.loadPlans(
+                          user?.fitnessGoal ?? 'build_muscle',
+                          user?.fitnessLevel ?? 'beginner',
+                        );
+                      },
+                      child: const Text('Reload Plans'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...filteredPlans.map((plan) {
+              return Card(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 7,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => _startWorkoutDialog(plan),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Colors.deepOrange.withValues(
+                            alpha: 0.1,
+                          ),
+                          child: const Icon(
+                            Icons.fitness_center,
+                            color: Colors.deepOrange,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                plan.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${plan.exerciseIds.length} exercises • ~${plan.estimatedDuration} mins',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.play_circle_fill,
+                          color: Colors.deepOrange,
+                          size: 32,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+        ],
+      ),
     );
   }
 
@@ -230,7 +511,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                   : ListView.separated(
                       itemCount: workoutProvider.muscleGroupExercises.length,
                       padding: const EdgeInsets.all(16),
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, index) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final ex = workoutProvider.muscleGroupExercises[index];
                         return Card(
@@ -336,6 +617,41 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
               );
             },
             child: const Text('Start Workout'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteCustomPlan(WorkoutPlanModel plan) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Delete Custom Plan'),
+        content: Text('Are you sure you want to delete "${plan.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogCtx);
+              final user = context.read<AuthProvider>().userProfile;
+              final success = await context.read<WorkoutProvider>().deleteCustomPlan(
+                    user?.uid ?? 'guest',
+                    plan.id,
+                  );
+              if (mounted && success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Deleted "${plan.name}"'),
+                    backgroundColor: Colors.deepOrange,
+                  ),
+                );
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
