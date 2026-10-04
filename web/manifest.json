@@ -1,6 +1,6 @@
 {
-    "name": "sem5",
-    "short_name": "sem5",
+    "name": "OmniFit",
+    "short_name": "OmniFit",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

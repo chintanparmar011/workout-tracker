@@ -7,7 +7,7 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('About FitTrack')),
+      appBar: AppBar(title: const Text('About OmniFit')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -29,7 +29,7 @@ class AboutScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'FitTrack',
+                  'OmniFit',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
@@ -44,7 +44,7 @@ class AboutScreen extends StatelessWidget {
 
           // What it provides Card
           const Text(
-            'What FitTrack Provides',
+            'What OmniFit Provides',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
@@ -145,12 +145,12 @@ class AboutScreen extends StatelessWidget {
                   InkWell(
                     onTap: () {
                       Clipboard.setData(
-                        const ClipboardData(text: 'goattrader223@gmail.com'),
+                        const ClipboardData(text: 'ischintan223@gmail.com'),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'Developer email copied to clipboard: goattrader223@gmail.com',
+                            'Developer email copied to clipboard: ischintan223@gmail.com',
                           ),
                         ),
                       );
@@ -177,7 +177,7 @@ class AboutScreen extends StatelessWidget {
                           ),
                           SizedBox(width: 10),
                           Text(
-                            'goattrader223@gmail.com',
+                            'ischintan223@gmail.com',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.deepOrange,

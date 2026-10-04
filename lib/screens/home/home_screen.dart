@@ -11,6 +11,7 @@ import '../strength/workout_history_screen.dart';
 import '../strength/workout_details_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../profile/profile_screen.dart';
+import '../ai_coach/ai_coach_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -54,8 +55,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FitTrack Dashboard'),
+        title: const Text('OmniFit Dashboard'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome),
+            tooltip: 'OmniFit AI Coach',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AiCoachScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.person_outline),
             tooltip: 'My Profile',
@@ -67,6 +78,18 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'home_ai_coach_fab',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AiCoachScreen()),
+          );
+        },
+        backgroundColor: Colors.deepOrange,
+        tooltip: 'Ask OmniFit AI Coach',
+        child: const Icon(Icons.psychology, color: Colors.white, size: 28),
       ),
       body: RefreshIndicator(
         onRefresh: _refreshData,
@@ -85,6 +108,91 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 'Goal: ${user?.fitnessGoal.replaceAll('_', ' ').toUpperCase() ?? 'GENERAL FITNESS'}',
                 style: TextStyle(fontSize: 14, color: Colors.grey[700], fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+
+              // OmniFit AI Coach Hero Card
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AiCoachScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.deepPurple.shade700,
+                        Colors.deepOrange.shade600,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.deepPurple.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.psychology,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Row(
+                              children: [
+                                Text(
+                                  'OmniFit AI Coach',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Icon(Icons.auto_awesome, color: Colors.amberAccent, size: 16),
+                              ],
+                            ),
+                            SizedBox(height: 3),
+                            Text(
+                              'Ask anything on diet, muscle growth, fat loss & custom routines',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                                height: 1.25,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white70,
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -230,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: recentWorkouts.length,
-                    separatorBuilder: (_, __) => const Divider(height: 0),
+                    separatorBuilder: (_, index) => const Divider(height: 0),
                     itemBuilder: (context, index) {
                       final record = recentWorkouts[index];
                       return ListTile(

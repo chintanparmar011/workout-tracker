@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.ce.fittrack" "\0"
-            VALUE "FileDescription", "sem5" "\0"
+            VALUE "FileDescription", "OmniFit" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "sem5" "\0"
+            VALUE "InternalName", "OmniFit" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.ce.fittrack. All rights reserved." "\0"
-            VALUE "OriginalFilename", "sem5.exe" "\0"
-            VALUE "ProductName", "sem5" "\0"
+            VALUE "OriginalFilename", "OmniFit.exe" "\0"
+            VALUE "ProductName", "OmniFit" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../screens/auth/login_screen.dart';
-import 'theme.dart';
-import '../screens/auth/verify_email_screen.dart';
-import '../screens/onboarding/personal_info_screen.dart';
 import '../providers/onboarding_provider.dart';
-import '../screens/main_navigation_screen.dart';
 import '../providers/workout_provider.dart';
 import '../providers/progress_provider.dart';
 import '../providers/nutrition_provider.dart';
+import '../providers/running_provider.dart';
+import '../providers/ai_coach_provider.dart';
+import '../screens/auth/login_screen.dart';
+import '../screens/auth/verify_email_screen.dart';
+import '../screens/onboarding/personal_info_screen.dart';
+import '../screens/main_navigation_screen.dart';
+import 'theme.dart';
 
 class FitTrackApp extends StatelessWidget {
   const FitTrackApp({super.key});
@@ -23,9 +25,11 @@ class FitTrackApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WorkoutProvider()),
         ChangeNotifierProvider(create: (_) => ProgressProvider()),
         ChangeNotifierProvider(create: (_) => NutritionProvider()),
+        ChangeNotifierProvider(create: (_) => RunningProvider()),
+        ChangeNotifierProvider(create: (_) => AiCoachProvider()),
       ],
       child: MaterialApp(
-        title: 'FitTrack',
+        title: 'OmniFit',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         home: const _AuthGate(),

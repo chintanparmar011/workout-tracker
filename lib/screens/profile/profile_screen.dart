@@ -319,7 +319,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out of FitTrack?'),
+        content: const Text('Are you sure you want to log out of OmniFit?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

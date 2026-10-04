@@ -73,7 +73,7 @@ class SettingsScreen extends StatelessWidget {
                     Icons.info_outline,
                     color: Colors.deepOrange,
                   ),
-                  title: const Text('About FitTrack'),
+                  title: const Text('About OmniFit'),
                   subtitle: const Text(
                     'App features, usage guide, and developer contact',
                   ),
