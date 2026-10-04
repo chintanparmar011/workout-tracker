@@ -16,6 +16,7 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
 
   User? get user => _user;
+  String get userId => _user?.uid ?? '';
   UserModel? get userProfile => _userProfile;
   bool get isLoading => _isLoading;
   bool get isInitializing => _isInitializing;
@@ -135,6 +136,28 @@ class AuthProvider extends ChangeNotifier {
     if (result.isSuccess) {
       _user = result.user;
       notifyListeners();
+      return true;
+    } else {
+      _errorMessage = result.errorMessage;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    _clearError();
+    notifyListeners();
+
+    final result = await _authService.signInWithGoogle();
+
+    _isLoading = false;
+    if (result.isSuccess) {
+      _user = result.user;
+      notifyListeners();
+      if (_user != null) {
+        await checkUserProfile();
+      }
       return true;
     } else {
       _errorMessage = result.errorMessage;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../utils/validators.dart';
 import 'fitness_goal_screen.dart';
@@ -23,8 +24,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   void initState() {
     super.initState();
     final initialName = context.read<OnboardingProvider>().name;
+    final authName = context.read<AuthProvider>().user?.displayName;
     if (initialName != null && initialName.isNotEmpty) {
       _nameController.text = initialName;
+    } else if (authName != null && authName.trim().isNotEmpty) {
+      _nameController.text = authName.trim();
     }
   }
 
