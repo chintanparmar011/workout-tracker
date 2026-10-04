@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/progress_provider.dart';
+import '../../providers/running_provider.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -24,13 +25,17 @@ class _ProgressScreenState extends State<ProgressScreen> {
   Future<void> _refresh() async {
     final user = context.read<AuthProvider>().user;
     if (user != null) {
-      await context.read<ProgressProvider>().loadProgressData(user.uid);
+      await Future.wait([
+        context.read<ProgressProvider>().loadProgressData(user.uid),
+        context.read<RunningProvider>().loadHistory(user.uid),
+      ]);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final progressProvider = context.watch<ProgressProvider>();
+    final runningProvider = context.watch<RunningProvider>();
     final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
@@ -124,8 +129,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                       style: TextStyle(
                                         color:
                                             progressProvider.weightChange <= 0
-                                            ? Colors.green
-                                            : Colors.orange,
+                                                ? Colors.green
+                                                : Colors.orange,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -304,6 +309,60 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: 32),
+
+                  // Real Running Performance Summary
+                  const Text(
+                    'Running Performance Summary',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatTile(
+                          label: 'Total Running Distance',
+                          value: '${runningProvider.totalDistanceKm.toStringAsFixed(1)} km',
+                          icon: Icons.straighten,
+                          color: Colors.lightBlue,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatTile(
+                          label: 'Number of Runs',
+                          value: '${runningProvider.totalRuns}',
+                          icon: Icons.directions_run,
+                          color: Colors.teal,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatTile(
+                          label: 'Best Pace',
+                          value: runningProvider.bestPace,
+                          icon: Icons.speed,
+                          color: Colors.indigo,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatTile(
+                          label: 'Longest Run',
+                          value: '${runningProvider.longestRunKm.toStringAsFixed(1)} km',
+                          icon: Icons.emoji_events,
+                          color: Colors.amber[800]!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
