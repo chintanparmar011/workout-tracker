@@ -61,24 +61,60 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
     _loadExercises();
   }
 
-  void _loadExercises() {
-    final exercises = _exerciseService.getAllCuratedExercises();
+  Future<void> _loadExercises() async {
+    final curated = _exerciseService.getAllCuratedExercises();
     setState(() {
-      _allAvailableExercises = exercises;
+      _allAvailableExercises = List.from(curated);
       _applyExerciseFilter();
     });
+
+    // Merge full exercise library including API results for complete selection
+    final groupsToFetch = [
+      'Chest',
+      'Back',
+      'Shoulders',
+      'Biceps',
+      'Triceps',
+      'Legs',
+      'Abs/Core',
+    ];
+    final Map<String, ExerciseModel> byName = {
+      for (final e in curated) e.name.toLowerCase().trim(): e,
+    };
+
+    for (final group in groupsToFetch) {
+      try {
+        final groupExercises = await _exerciseService.getExercisesByMuscleGroup(group);
+        for (final ex in groupExercises) {
+          final key = ex.name.toLowerCase().trim();
+          if (!byName.containsKey(key)) {
+            byName[key] = ex;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (mounted) {
+      setState(() {
+        _allAvailableExercises = byName.values.toList();
+        _applyExerciseFilter();
+      });
+    }
   }
 
   void _applyExerciseFilter() {
     List<ExerciseModel> list = List.from(_allAvailableExercises);
 
     if (_filterMuscleGroup != 'All') {
+      final filterLower = _filterMuscleGroup.toLowerCase();
       list = list.where((e) {
+        final mLower = e.muscleGroup.toLowerCase();
         if (_filterMuscleGroup == 'Abs/Core') {
-          return e.muscleGroup.toLowerCase().contains('core') ||
-              e.muscleGroup.toLowerCase().contains('abs');
+          return mLower.contains('core') ||
+              mLower.contains('abs') ||
+              mLower.contains('waist');
         }
-        return e.muscleGroup.toLowerCase() == _filterMuscleGroup.toLowerCase();
+        return mLower == filterLower || mLower.contains(filterLower);
       }).toList();
     }
 
