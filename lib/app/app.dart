@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/workout_provider.dart';
@@ -20,6 +21,7 @@ class FitTrackApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
         ChangeNotifierProvider(create: (_) => WorkoutProvider()),
@@ -28,11 +30,17 @@ class FitTrackApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RunningProvider()),
         ChangeNotifierProvider(create: (_) => AiCoachProvider()),
       ],
-      child: MaterialApp(
-        title: 'OmniFit',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const _AuthGate(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'OmniFit',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const _AuthGate(),
+          );
+        },
       ),
     );
   }

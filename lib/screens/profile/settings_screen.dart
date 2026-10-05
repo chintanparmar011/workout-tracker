@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
 import 'edit_profile_screen.dart';
 import 'about_screen.dart';
 
@@ -7,6 +9,10 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDarkMode;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
@@ -29,9 +35,9 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.person_outline,
-                    color: Colors.deepOrange,
+                    color: primaryColor,
                   ),
                   title: const Text('Edit Profile'),
                   subtitle: const Text(
@@ -45,6 +51,24 @@ class SettingsScreen extends StatelessWidget {
                         builder: (_) => const EditProfileScreen(),
                       ),
                     );
+                  },
+                ),
+                const Divider(height: 1),
+                SwitchListTile.adaptive(
+                  secondary: Icon(
+                    isDark ? Icons.dark_mode : Icons.light_mode,
+                    color: primaryColor,
+                  ),
+                  title: const Text('Dark Mode (Cyber Volt)'),
+                  subtitle: Text(
+                    isDark
+                        ? 'Matte Obsidian & Electric Lime active'
+                        : 'Clean high-contrast Light Theme',
+                  ),
+                  value: isDark,
+                  activeThumbColor: const Color(0xFFB4F000),
+                  onChanged: (val) {
+                    themeProvider.toggleTheme(val);
                   },
                 ),
               ],
@@ -69,9 +93,9 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(
+                  leading: Icon(
                     Icons.info_outline,
-                    color: Colors.deepOrange,
+                    color: primaryColor,
                   ),
                   title: const Text('About OmniFit'),
                   subtitle: const Text(

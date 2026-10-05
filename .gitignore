@@ -49,6 +49,8 @@ app.*.map.json
 # Additional Android
 android/local.properties
 android/.gradle/
+android/build/
+android/app/build/
 
 # Firebase config (contains project keys — regenerate via flutterfire configure)
 android/app/google-services.json
