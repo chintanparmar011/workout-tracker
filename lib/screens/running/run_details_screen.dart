@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../models/running_session_model.dart';
+import '../../utils/google_maps_checker.dart';
 import '../../widgets/open_street_map_widget.dart';
 import '../../widgets/route_track_visualizer.dart';
 
@@ -67,7 +68,9 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
           markerId: const MarkerId('start'),
           position: routeCoordinates.first,
           infoWindow: const InfoWindow(title: 'Start'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          icon: kIsWeb
+              ? BitmapDescriptor.defaultMarker
+              : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         ),
       );
       if (routeCoordinates.length > 1) {
@@ -76,7 +79,9 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
             markerId: const MarkerId('end'),
             position: routeCoordinates.last,
             infoWindow: const InfoWindow(title: 'Finish'),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+            icon: kIsWeb
+                ? BitmapDescriptor.defaultMarker
+                : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
           ),
         );
       }
@@ -89,6 +94,8 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
         ? widget.session.route.first
         : const LatLngPoint(latitude: 37.7749, longitude: -122.4194);
 
+    final canUseGoogleMaps = !_isDesktop && (!kIsWeb || isGoogleMapsReady());
+
     Widget mapDisplayWidget;
     String badgeText;
     IconData badgeIcon;
@@ -100,7 +107,7 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
       );
       badgeText = 'OpenStreetMap';
       badgeIcon = Icons.public;
-    } else if (_viewMode == 1 && !_isDesktop) {
+    } else if (_viewMode == 1 && canUseGoogleMaps) {
       mapDisplayWidget = hasMapData
           ? GoogleMap(
               initialCameraPosition: initialCamera,
@@ -132,7 +139,7 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
               onPressed: () {
                 setState(() {
                   if (_viewMode == 0) {
-                    _viewMode = _isDesktop ? 2 : 1;
+                    _viewMode = canUseGoogleMaps ? 1 : 2;
                   } else if (_viewMode == 1) {
                     _viewMode = 2;
                   } else {

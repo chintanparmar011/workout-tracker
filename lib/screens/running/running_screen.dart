@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../models/running_session_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/running_provider.dart';
+import '../../utils/google_maps_checker.dart';
 import '../../widgets/open_street_map_widget.dart';
 import '../../widgets/route_track_visualizer.dart';
 import 'run_details_screen.dart';
@@ -72,11 +74,13 @@ class _RunningScreenState extends State<RunningScreen>
             tooltip: 'Select Map Engine',
             initialValue: _currentEngine,
             onSelected: (engine) {
-              if (engine == MapEngine.googleMaps && _isDesktop) {
+              if (engine == MapEngine.googleMaps && (_isDesktop || (kIsWeb && !isGoogleMapsReady()))) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text(
-                      'Google Maps native SDK requires Android, iOS, or Web. Using OpenStreetMap on desktop.',
+                      _isDesktop
+                          ? 'Google Maps native SDK requires Android, iOS, or Web. Using OpenStreetMap on desktop.'
+                          : 'Google Maps is initializing or unavailable. Using OpenStreetMap.',
                     ),
                   ),
                 );
@@ -176,9 +180,11 @@ class _RunningScreenState extends State<RunningScreen>
           markerId: const MarkerId('current_location'),
           position: LatLng(currentPos.latitude, currentPos.longitude),
           infoWindow: const InfoWindow(title: 'Your Location'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueAzure,
-          ),
+          icon: kIsWeb
+              ? BitmapDescriptor.defaultMarker
+              : BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueAzure,
+                ),
         ),
     };
 
@@ -252,8 +258,9 @@ class _RunningScreenState extends State<RunningScreen>
             onTap: () {
               setState(() {
                 if (_currentEngine == MapEngine.openStreetMap) {
-                  _currentEngine =
-                      _isDesktop ? MapEngine.radarVisualizer : MapEngine.googleMaps;
+                  _currentEngine = (_isDesktop || (kIsWeb && !isGoogleMapsReady()))
+                      ? MapEngine.radarVisualizer
+                      : MapEngine.googleMaps;
                 } else if (_currentEngine == MapEngine.googleMaps) {
                   _currentEngine = MapEngine.radarVisualizer;
                 } else {
@@ -788,8 +795,84 @@ class _SafeGoogleMapView extends StatefulWidget {
 }
 
 class _SafeGoogleMapViewState extends State<_SafeGoogleMapView> {
+  Timer? _retryTimer;
+  late bool _isReady;
+
+  @override
+  void initState() {
+    super.initState();
+    _isReady = !kIsWeb || isGoogleMapsReady();
+    if (kIsWeb && !_isReady) {
+      _retryTimer = Timer.periodic(const Duration(milliseconds: 600), (timer) {
+        if (isGoogleMapsReady()) {
+          timer.cancel();
+          if (mounted) {
+            setState(() {
+              _isReady = true;
+            });
+          }
+        } else if (timer.tick > 8) {
+          timer.cancel();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _retryTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb && !_isReady) {
+      return Container(
+        color: const Color(0xFF0F172A),
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.deepOrange,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Connecting to Google Maps...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Waiting for Maps services. You can also switch immediately to OpenStreetMap.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.public, size: 16),
+                label: const Text('Use OpenStreetMap Now'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: widget.onFallback,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     try {
       return GoogleMap(
         initialCameraPosition: CameraPosition(

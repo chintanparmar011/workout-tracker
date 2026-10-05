@@ -30,6 +30,18 @@
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>OmniFit</title>
+  <!-- Local git-ignored maps config loader (keeps API keys completely off GitHub) -->
+  <script src="maps_config.js"></script>
+  <script>
+    if (typeof window.GOOGLE_MAPS_API_KEY === 'string' && window.GOOGLE_MAPS_API_KEY.length > 5) {
+      var mapScript = document.createElement('script');
+      mapScript.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(window.GOOGLE_MAPS_API_KEY);
+      document.head.appendChild(mapScript);
+    }
+    window.isGoogleMapsLoaded = function() {
+      return typeof google !== 'undefined' && typeof google.maps !== 'undefined';
+    };
+  </script>
 </head>
 <body>
   <!--

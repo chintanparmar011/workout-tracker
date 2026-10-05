@@ -57,6 +57,7 @@ lib/firebase_options.dart
 
 # API Secrets and Environment Files
 lib/utils/api_constants.dart
+web/maps_config.js
 *.env
 .env
 .env.*
