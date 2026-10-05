@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/exercise_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/workout_provider.dart';
+import '../../widgets/pr_celebration_dialog.dart';
+import '../../widgets/rest_timer_overlay.dart';
 import 'workout_summary_screen.dart';
 
 class ActiveWorkoutScreen extends StatefulWidget {
@@ -14,6 +17,9 @@ class ActiveWorkoutScreen extends StatefulWidget {
 class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   final Map<String, TextEditingController> _repsControllers = {};
   final Map<String, TextEditingController> _weightControllers = {};
+  int _activeRestSeconds = 90;
+  bool _isRestTimerActive = false;
+  int _restTimerKeyCounter = 0;
 
   @override
   void dispose() {
@@ -69,44 +75,82 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
         ),
         body: workoutProvider.isLoading
             ? const Center(child: CircularProgressIndicator())
-            : Column(
+            : Stack(
                 children: [
-                  // Progress tracker bar
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    color: Colors.white,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    children: [
+                      // Progress tracker bar
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        color: Theme.of(context).cardColor,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Progress: $totalActualReps / $totalTargetReps reps',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Progress: $totalActualReps / $totalTargetReps reps',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  '${completionPct.toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: completionPct >= 80 ? Colors.green : Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              '${completionPct.toStringAsFixed(0)}%',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: completionPct >= 80 ? Colors.green : Colors.deepOrange,
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: totalTargetReps > 0 ? (totalActualReps / totalTargetReps).clamp(0.0, 1.0) : 0.0,
+                                backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                                color: Theme.of(context).colorScheme.primary,
+                                minHeight: 6,
                               ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Icon(Icons.fitness_center, size: 16, color: Colors.grey[600]),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Volume: ${workoutProvider.totalActiveVolumeKg.toStringAsFixed(0)} kg',
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[700]),
+                                ),
+                                if (workoutProvider.sessionPrs.isNotEmpty) ...[
+                                  const Spacer(),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('🏆 ', style: TextStyle(fontSize: 12)),
+                                        Text(
+                                          '${workoutProvider.sessionPrs.length} PR${workoutProvider.sessionPrs.length > 1 ? 's' : ''}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFD4AF37),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: totalTargetReps > 0 ? (totalActualReps / totalTargetReps).clamp(0.0, 1.0) : 0.0,
-                            backgroundColor: Colors.grey[200],
-                            color: Colors.deepOrange,
-                            minHeight: 6,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
 
                   Expanded(
                     child: ListView.builder(
@@ -251,6 +295,24 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                       },
                     ),
                   ),
+                    ],
+                  ),
+                  if (_isRestTimerActive)
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: RestTimerOverlay(
+                        key: ValueKey('rest_timer_$_restTimerKeyCounter'),
+                        initialSeconds: _activeRestSeconds,
+                        onFinished: () {
+                          if (mounted) setState(() => _isRestTimerActive = false);
+                        },
+                        onCancel: () {
+                          if (mounted) setState(() => _isRestTimerActive = false);
+                        },
+                      ),
+                    ),
                 ],
               ),
       ),
@@ -279,7 +341,35 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     }
 
     final weight = double.tryParse(weightController.text.trim()) ?? 0.0;
-    context.read<WorkoutProvider>().addSet(exerciseId, reps, weight);
+    final pr = context.read<WorkoutProvider>().addSet(exerciseId, reps, weight);
+
+    // 1. If PR achieved, show celebration modal
+    if (pr != null && mounted) {
+      showPrCelebrationDialog(context, pr);
+    }
+
+    // 2. Look up exercise target rest seconds and trigger timer
+    final exercise = context.read<WorkoutProvider>().activeExercises.firstWhere(
+          (e) => e.id == exerciseId,
+          orElse: () => ExerciseModel(
+            id: exerciseId,
+            name: 'Exercise',
+            description: '',
+            muscleGroup: '',
+            difficulty: '',
+            equipment: '',
+            targetSets: 3,
+            targetReps: 10,
+            restSeconds: 90,
+            instructions: '',
+          ),
+        );
+
+    setState(() {
+      _activeRestSeconds = exercise.restSeconds > 0 ? exercise.restSeconds : 90;
+      _isRestTimerActive = true;
+      _restTimerKeyCounter++;
+    });
   }
 
   void _confirmCancelWorkout() {

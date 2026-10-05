@@ -99,6 +99,24 @@ class WorkoutRecordModel {
     return ((totalActualReps / totalTargetReps) * 100).clamp(0, 100);
   }
 
+  /// Total volume lifted in kilograms across all exercises and sets
+  double get totalVolumeKg {
+    double total = 0.0;
+    for (final ex in exerciseRecords) {
+      for (final s in ex.actualSets) {
+        total += s.weight * s.reps;
+      }
+    }
+    return total;
+  }
+
+  /// Estimated caloric expenditure based on session duration and volume
+  int get estimatedCaloriesBurned {
+    final base = durationMinutes * 6.0;
+    final volumeBonus = (totalVolumeKg / 1000.0) * 12.0;
+    return (base + volumeBonus).clamp(40.0, 1200.0).round();
+  }
+
   /// Rule-based feedback according to document specification (Section 15):
   /// - Completion >= 90% -> "Excellent performance."
   /// - Completion 70-89% -> "Good progress. Keep working consistently."

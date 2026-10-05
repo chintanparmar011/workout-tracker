@@ -4,6 +4,7 @@ import '../models/exercise_model.dart';
 import '../models/workout_record_model.dart';
 import '../services/firestore_service.dart';
 import '../services/exercise_service.dart';
+import '../utils/one_rep_max_calculator.dart';
 
 class WorkoutProvider extends ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
@@ -29,6 +30,8 @@ class WorkoutProvider extends ChangeNotifier {
   WorkoutPlanModel? _activePlan;
   List<ExerciseModel> _activeExercises = [];
   final Map<String, List<ActualSet>> _progress = {}; // exerciseId -> sets
+  final List<PrCheckResult> _sessionPrs = [];
+  List<PrCheckResult> _lastCompletedSessionPrs = [];
   DateTime? _startTime;
   WorkoutRecordModel? _lastCompletedWorkout;
 
@@ -36,6 +39,9 @@ class WorkoutProvider extends ChangeNotifier {
   List<ExerciseModel> get activeExercises => _activeExercises;
   DateTime? get startTime => _startTime;
   WorkoutRecordModel? get lastCompletedWorkout => _lastCompletedWorkout;
+  List<PrCheckResult> get sessionPrs => List.unmodifiable(_sessionPrs);
+  List<PrCheckResult> get lastCompletedSessionPrs =>
+      List.unmodifiable(_lastCompletedSessionPrs);
   bool get isWorkoutInProgress => _activePlan != null && _startTime != null;
 
   int get activeElapsedSeconds {
@@ -60,12 +66,46 @@ class WorkoutProvider extends ChangeNotifier {
     return total;
   }
 
+  double get totalActiveVolumeKg {
+    double total = 0.0;
+    for (final sets in _progress.values) {
+      for (final s in sets) {
+        total += s.weight * s.reps;
+      }
+    }
+    return total;
+  }
+
   double get currentCompletionPercent {
     if (totalActiveTargetReps == 0) return 0;
     return ((totalActiveActualReps / totalActiveTargetReps) * 100).clamp(
       0,
       100,
     );
+  }
+
+  /// Get historical max weight and estimated 1RM for an exercise across past workouts
+  Map<String, double> getHistoricalBestForExercise(String exerciseId) {
+    double maxWeight = 0.0;
+    double max1Rm = 0.0;
+
+    for (final workout in _workoutHistory) {
+      for (final exRec in workout.exerciseRecords) {
+        if (exRec.exerciseId == exerciseId ||
+            exRec.exerciseName.toLowerCase().trim() ==
+                exerciseId.toLowerCase().trim()) {
+          for (final s in exRec.actualSets) {
+            if (s.weight > maxWeight) maxWeight = s.weight;
+            final est1Rm = OneRepMaxCalculator.estimate1Rm(
+              weight: s.weight,
+              reps: s.reps,
+            );
+            if (est1Rm > max1Rm) max1Rm = est1Rm;
+          }
+        }
+      }
+    }
+    return {'maxWeight': maxWeight, 'max1Rm': max1Rm};
   }
 
   Future<void> loadPlans(String goal, String level) async {
@@ -198,12 +238,48 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  void addSet(String exerciseId, int reps, double weight) {
+  PrCheckResult? addSet(String exerciseId, int reps, double weight) {
     if (!_progress.containsKey(exerciseId)) {
       _progress[exerciseId] = [];
     }
     _progress[exerciseId]!.add(ActualSet(reps: reps, weight: weight));
+
+    PrCheckResult? prResult;
+    if (weight > 0 && reps > 0) {
+      final exercise = _activeExercises.firstWhere(
+        (e) => e.id == exerciseId,
+        orElse: () => ExerciseModel(
+          id: exerciseId,
+          name: 'Exercise',
+          description: '',
+          muscleGroup: '',
+          difficulty: '',
+          equipment: '',
+          targetSets: 3,
+          targetReps: 10,
+          restSeconds: 60,
+          instructions: '',
+        ),
+      );
+
+      final historicalBest = getHistoricalBestForExercise(exerciseId);
+      final check = OneRepMaxCalculator.checkPersonalRecord(
+        exerciseId: exerciseId,
+        exerciseName: exercise.displayName,
+        weight: weight,
+        reps: reps,
+        previousMaxWeight: historicalBest['maxWeight'] ?? 0.0,
+        previousEstimated1Rm: historicalBest['max1Rm'] ?? 0.0,
+      );
+
+      if (check.isPr) {
+        _sessionPrs.add(check);
+        prResult = check;
+      }
+    }
+
     notifyListeners();
+    return prResult;
   }
 
   void removeLastSet(String exerciseId) {
@@ -223,6 +299,7 @@ class WorkoutProvider extends ChangeNotifier {
     _startTime = null;
     _activeExercises.clear();
     _progress.clear();
+    _sessionPrs.clear();
     notifyListeners();
   }
 
@@ -262,10 +339,12 @@ class WorkoutProvider extends ChangeNotifier {
 
     if (success) {
       _lastCompletedWorkout = record;
+      _lastCompletedSessionPrs = List.from(_sessionPrs);
       _activePlan = null;
       _startTime = null;
       _activeExercises.clear();
       _progress.clear();
+      _sessionPrs.clear();
 
       // Refresh history list
       loadHistory(userId);
