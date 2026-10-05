@@ -6,6 +6,7 @@ import '../../models/running_session_model.dart';
 import '../../utils/google_maps_checker.dart';
 import '../../widgets/open_street_map_widget.dart';
 import '../../widgets/route_track_visualizer.dart';
+import '../../widgets/workout_story_card.dart';
 
 class RunDetailsScreen extends StatefulWidget {
   final RunningSessionModel session;
@@ -267,6 +268,31 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
                     Text(widget.session.notes!,
                         style: TextStyle(color: Colors.grey[800], fontSize: 14)),
                   ],
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFB4F000),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    icon: const Icon(Icons.auto_awesome, size: 20),
+                    label: const Text(
+                      'Share Run Story',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    onPressed: () {
+                      showWorkoutStoryModal(
+                        context,
+                        runSession: widget.session,
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
