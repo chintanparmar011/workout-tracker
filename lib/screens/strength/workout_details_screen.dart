@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../app/theme.dart';
 import '../../models/workout_record_model.dart';
 
 class WorkoutDetailsScreen extends StatelessWidget {
@@ -28,30 +29,45 @@ class WorkoutDetailsScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    Row(
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 8,
                       children: [
-                        const Icon(Icons.timer, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${record.durationMinutes} mins',
-                          style: TextStyle(color: Colors.grey[700]),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.timer, size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${record.durationMinutes} mins',
+                              style: TextStyle(color: Colors.grey[400]),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        const Icon(Icons.repeat, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${record.totalActualReps} / ${record.totalTargetReps} reps',
-                          style: TextStyle(color: Colors.grey[700]),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.repeat, size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${record.totalActualReps} / ${record.totalTargetReps} reps',
+                              style: TextStyle(color: Colors.grey[400]),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        const Icon(Icons.percent, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${record.overallCompletionPercent.toStringAsFixed(0)}%',
-                          style: TextStyle(
-                            color: record.overallCompletionPercent >= 80 ? Colors.green : Colors.deepOrange,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.percent, size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${record.overallCompletionPercent.toStringAsFixed(0)}%',
+                              style: TextStyle(
+                                color: record.overallCompletionPercent >= 80 ? Colors.green : AppTheme.crimsonBerryLight,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -91,14 +107,14 @@ class WorkoutDetailsScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.deepOrange.withValues(alpha: 0.1),
+                              color: AppTheme.crimsonBerry.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               'Target: ${ex.targetSets}x${ex.targetReps}',
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.deepOrange,
+                                color: AppTheme.crimsonBerryLight,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -114,7 +130,10 @@ class WorkoutDetailsScreen extends StatelessWidget {
                           final set = entry.value;
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 3),
-                            child: Row(
+                            child: Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              runSpacing: 4,
                               children: [
                                 CircleAvatar(
                                   radius: 10,
@@ -124,7 +143,6 @@ class WorkoutDetailsScreen extends StatelessWidget {
                                     style: const TextStyle(fontSize: 10, color: Colors.black87),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
                                 Text(
                                   '${set.reps} reps',
                                   style: const TextStyle(fontWeight: FontWeight.w500),
@@ -132,7 +150,7 @@ class WorkoutDetailsScreen extends StatelessWidget {
                                 if (set.weight > 0)
                                   Text(
                                     ' @ ${set.weight} kg',
-                                    style: TextStyle(color: Colors.grey[700]),
+                                    style: TextStyle(color: Colors.grey[400]),
                                   ),
                               ],
                             ),

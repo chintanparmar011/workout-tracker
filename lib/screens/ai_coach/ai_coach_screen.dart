@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../providers/ai_coach_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/ai_message_model.dart';
 import '../../utils/api_constants.dart';
+import '../../widgets/app_brand.dart';
 
 class AiCoachScreen extends StatefulWidget {
   const AiCoachScreen({super.key});
@@ -76,7 +78,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
       builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.vpn_key, color: Colors.deepOrange),
+            Icon(Icons.vpn_key, color: AppTheme.crimsonBerryLight),
             SizedBox(width: 8),
             Text('Gemini API Key'),
           ],
@@ -93,7 +95,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             const SelectableText(
               'https://aistudio.google.com/',
               style: TextStyle(
-                color: Colors.deepOrange,
+                color: AppTheme.crimsonBerryLight,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -151,14 +153,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.psychology, color: Colors.white, size: 22),
-            ),
+            const AppBrandMark(size: 34),
             const SizedBox(width: 10),
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,15 +223,15 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                         avatar: const Icon(
                           Icons.chat_bubble_outline,
                           size: 14,
-                          color: Colors.deepOrange,
+                          color: AppTheme.crimsonBerryLight,
                         ),
                         label: Text(
                           chipText,
-                          style: const TextStyle(fontSize: 12),
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
                         ),
-                        backgroundColor: Colors.deepOrange.withValues(alpha: 0.08),
+                        backgroundColor: AppTheme.crimsonBerry.withValues(alpha: 0.12),
                         side: BorderSide(
-                          color: Colors.deepOrange.withValues(alpha: 0.3),
+                          color: AppTheme.crimsonBerry.withValues(alpha: 0.35),
                         ),
                         onPressed: aiProvider.isLoading
                             ? null
@@ -281,19 +276,20 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: Colors.deepOrange.withValues(alpha: 0.15),
-            child: const Icon(Icons.fitness_center, size: 18, color: Colors.deepOrange),
+            backgroundColor: AppTheme.crimsonBerry.withValues(alpha: 0.15),
+            child: const Icon(Icons.fitness_center, size: 18, color: AppTheme.crimsonBerryLight),
           ),
           const SizedBox(width: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: AppTheme.slateCardElevated,
               borderRadius: const BorderRadius.only(
                 topRight: Radius.circular(16),
                 bottomLeft: Radius.circular(16),
                 bottomRight: Radius.circular(16),
               ),
+              border: Border.all(color: AppTheme.slateBorder),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -303,13 +299,13 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                   height: 14,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.deepOrange,
+                    color: AppTheme.crimsonBerryLight,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Text(
                   'OmniFit Coach is preparing your fitness advice...',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
@@ -331,8 +327,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
           if (!isUser) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.deepOrange.withValues(alpha: 0.15),
-              child: const Icon(Icons.psychology, size: 18, color: Colors.deepOrange),
+              backgroundColor: AppTheme.crimsonBerry.withValues(alpha: 0.15),
+              child: const Icon(Icons.psychology, size: 18, color: AppTheme.crimsonBerryLight),
             ),
             const SizedBox(width: 8),
           ],
@@ -341,8 +337,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: isUser
-                    ? Colors.deepOrange
-                    : (msg.isError ? Colors.red.shade50 : Colors.white),
+                    ? AppTheme.crimsonBerry
+                    : (msg.isError ? Colors.red.withValues(alpha: 0.15) : AppTheme.slateCardElevated),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -353,8 +349,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                     ? null
                     : Border.all(
                         color: msg.isError
-                            ? Colors.red.shade200
-                            : Colors.grey.shade300,
+                            ? Colors.red.withValues(alpha: 0.4)
+                            : AppTheme.slateBorder,
                       ),
                 boxShadow: [
                   BoxShadow(
@@ -371,8 +367,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.deepOrange.shade100,
-              child: const Icon(Icons.person, size: 18, color: Colors.deepOrange),
+              backgroundColor: AppTheme.crimsonBerry.withValues(alpha: 0.25),
+              child: const Icon(Icons.person, size: 18, color: AppTheme.crimsonBerryLight),
             ),
           ],
         ],
@@ -407,7 +403,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Colors.white,
               ),
             ),
           );
@@ -424,7 +420,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                   '• ',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepOrange,
+                    color: AppTheme.crimsonBerryLight,
                     fontSize: 16,
                   ),
                 ),
@@ -449,7 +445,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                   prefix,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepOrange,
+                    color: AppTheme.crimsonBerryLight,
                     fontSize: 14,
                   ),
                 ),
@@ -479,7 +475,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     if (parts.length <= 1) {
       return Text(
         raw,
-        style: const TextStyle(fontSize: 14, height: 1.4, color: Colors.black87),
+        style: const TextStyle(fontSize: 14, height: 1.4, color: Colors.white),
       );
     }
 
@@ -491,7 +487,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
           text: parts[i],
           style: TextStyle(
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            color: isBold ? Colors.black87 : Colors.black87,
+            color: Colors.white,
             fontSize: 14,
             height: 1.4,
           ),
@@ -508,9 +504,9 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade300),
+        color: AppTheme.slateCard,
+        border: const Border(
+          top: BorderSide(color: AppTheme.slateBorder),
         ),
       ),
       child: Row(
@@ -520,27 +516,36 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
               controller: _textController,
               focusNode: _focusNode,
               maxLines: null,
+              style: const TextStyle(color: Colors.white),
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _sendMessage(),
               decoration: InputDecoration(
                 hintText: 'Ask about diet, muscle growth, workouts...',
-                hintStyle: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                hintStyle: const TextStyle(fontSize: 14, color: AppTheme.textMuted),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 10,
                 ),
                 filled: true,
-                fillColor: Colors.grey[100],
+                fillColor: const Color(0xFF12141C),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: AppTheme.slateBorder),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: const BorderSide(color: AppTheme.slateBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: const BorderSide(color: AppTheme.crimsonBerry),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
           CircleAvatar(
-            backgroundColor: aiProvider.isLoading ? Colors.grey : Colors.deepOrange,
+            backgroundColor: aiProvider.isLoading ? Colors.grey[800] : AppTheme.crimsonBerry,
             radius: 22,
             child: IconButton(
               icon: const Icon(Icons.send, color: Colors.white, size: 20),

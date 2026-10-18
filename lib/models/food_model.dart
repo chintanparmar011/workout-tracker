@@ -21,12 +21,60 @@ class FoodModel {
 
   String get displayName {
     if (name.isEmpty) return 'Food Item';
-    // USDA descriptions often have uppercase or commas e.g. "CHICKEN, BREAST, COOKED"
-    final clean = name.toLowerCase().split(', ').reversed.join(' ');
-    return clean
-        .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-        .join(' ');
+    final trimmed = name.trim();
+
+    String toTitleCase(String text) {
+      return text.split(' ').map((word) {
+        if (word.isEmpty) return '';
+        int firstLetterIdx = 0;
+        while (firstLetterIdx < word.length &&
+            !RegExp(r'[a-zA-Z]').hasMatch(word[firstLetterIdx])) {
+          firstLetterIdx++;
+        }
+        if (firstLetterIdx >= word.length) return word;
+        final prefix = word.substring(0, firstLetterIdx);
+        final char = word[firstLetterIdx].toUpperCase();
+        final rest = word.substring(firstLetterIdx + 1).toLowerCase();
+        return '$prefix$char$rest';
+      }).join(' ');
+    }
+
+    // Split by comma outside of parentheses
+    final parts = <String>[];
+    final buffer = StringBuffer();
+    int depth = 0;
+    for (int i = 0; i < trimmed.length; i++) {
+      final char = trimmed[i];
+      if (char == '(') depth++;
+      if (char == ')') depth = (depth - 1).clamp(0, 99);
+      if (char == ',' && depth == 0) {
+        if (buffer.isNotEmpty) {
+          parts.add(buffer.toString().trim());
+          buffer.clear();
+        }
+      } else {
+        buffer.write(char);
+      }
+    }
+    if (buffer.isNotEmpty) {
+      parts.add(buffer.toString().trim());
+    }
+
+    if (parts.length <= 1) {
+      return toTitleCase(trimmed);
+    }
+
+    final mainPart =
+        parts.take(parts.length > 2 ? 2 : 1).map(toTitleCase).join(' ');
+    final subParts =
+        parts.skip(parts.length > 2 ? 2 : 1).map(toTitleCase).join(', ');
+
+    if (subParts.isNotEmpty && !subParts.startsWith('(')) {
+      return '$mainPart ($subParts)';
+    } else if (subParts.isNotEmpty) {
+      return '$mainPart $subParts';
+    }
+    return mainPart;
   }
 
   factory FoodModel.fromUsdaJson(Map<String, dynamic> json) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/workout_provider.dart';
 import '../../models/workout_model.dart';
@@ -67,8 +68,8 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
         title: const Text('Strength Training'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.deepOrange,
-          labelColor: Colors.deepOrange,
+          indicatorColor: AppTheme.crimsonBerry,
+          labelColor: AppTheme.crimsonBerryLight,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(text: 'Workout Plans'),
@@ -87,7 +88,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                   ),
                 );
               },
-              backgroundColor: Colors.deepOrange,
+              backgroundColor: AppTheme.crimsonBerry,
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(
                 'Create Plan',
@@ -146,13 +147,11 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
               margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.deepOrange, Colors.orange.shade700],
-                ),
+                gradient: AppTheme.crimsonGradient,
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.deepOrange.withValues(alpha: 0.25),
+                    color: AppTheme.crimsonBerry.withValues(alpha: 0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -240,7 +239,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: Colors.deepOrange.withValues(alpha: 0.4),
+                    color: AppTheme.crimsonBerry.withValues(alpha: 0.4),
                   ),
                 ),
                 child: InkWell(
@@ -251,12 +250,12 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: Colors.deepOrange.withValues(
+                          backgroundColor: AppTheme.crimsonBerry.withValues(
                             alpha: 0.15,
                           ),
                           child: const Icon(
                             Icons.stars,
-                            color: Colors.deepOrange,
+                            color: AppTheme.crimsonBerryLight,
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -281,15 +280,15 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.deepOrange.withValues(
-                                        alpha: 0.1,
+                                      color: AppTheme.crimsonBerry.withValues(
+                                        alpha: 0.15,
                                       ),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Text(
                                       'CUSTOM',
                                       style: TextStyle(
-                                        color: Colors.deepOrange,
+                                        color: AppTheme.crimsonBerryLight,
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -319,7 +318,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                         IconButton(
                           icon: const Icon(
                             Icons.play_circle_fill,
-                            color: Colors.deepOrange,
+                            color: AppTheme.crimsonBerry,
                             size: 32,
                           ),
                           tooltip: 'Start workout',
@@ -428,12 +427,12 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: Colors.deepOrange.withValues(
-                            alpha: 0.1,
+                          backgroundColor: AppTheme.crimsonBerry.withValues(
+                            alpha: 0.15,
                           ),
                           child: const Icon(
                             Icons.fitness_center,
-                            color: Colors.deepOrange,
+                            color: AppTheme.crimsonBerryLight,
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -461,7 +460,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                         ),
                         const Icon(
                           Icons.play_circle_fill,
-                          color: Colors.deepOrange,
+                          color: AppTheme.crimsonBerry,
                           size: 32,
                         ),
                       ],
@@ -561,7 +560,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
             const SizedBox(height: 6),
             Text(
               'Muscle Group: ${ex.muscleGroup} • Equipment: ${ex.equipment}',
-              style: TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w500),
+              style: TextStyle(color: AppTheme.crimsonBerryLight, fontWeight: FontWeight.w600),
             ),
             const Divider(height: 24),
             Row(
@@ -646,7 +645,7 @@ class _StrengthScreenState extends State<StrengthScreen> with SingleTickerProvid
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Deleted "${plan.name}"'),
-                    backgroundColor: Colors.deepOrange,
+                    backgroundColor: AppTheme.crimsonBerry,
                   ),
                 );
               }

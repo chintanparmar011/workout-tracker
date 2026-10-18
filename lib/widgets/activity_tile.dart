@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../app/theme.dart';
 
 class ActivityTile extends StatelessWidget {
   final String title;
@@ -23,10 +24,10 @@ class ActivityTile extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.deepOrange.withValues(alpha: 0.1),
+          color: AppTheme.crimsonBerry.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: Colors.deepOrange),
+        child: Icon(icon, color: AppTheme.crimsonBerryLight),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text('${DateFormat('MMM d, yyyy').format(date)} • $subtitle'),

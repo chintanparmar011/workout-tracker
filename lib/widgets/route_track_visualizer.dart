@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../app/theme.dart';
 import '../models/running_session_model.dart';
 
 class RouteTrackVisualizer extends StatelessWidget {
@@ -97,7 +98,7 @@ class RouteTrackVisualizer extends StatelessWidget {
                   Icon(
                     Icons.route,
                     size: 14,
-                    color: isLive ? Colors.greenAccent : Colors.orangeAccent,
+                    color: isLive ? Colors.greenAccent : AppTheme.crimsonBerryLight,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -195,7 +196,7 @@ class _RoutePathPainter extends CustomPainter {
 
     // Main line paint
     final linePaint = Paint()
-      ..color = Colors.deepOrangeAccent
+      ..color = AppTheme.crimsonBerryLight
       ..strokeWidth = 4.0
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round

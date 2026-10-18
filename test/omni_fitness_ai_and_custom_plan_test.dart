@@ -4,6 +4,7 @@ import 'package:fittracker/services/ai_fitness_service.dart';
 import 'package:fittracker/models/workout_model.dart';
 import 'package:fittracker/providers/ai_coach_provider.dart';
 import 'package:fittracker/providers/nutrition_provider.dart';
+import 'package:fittracker/models/food_model.dart';
 import 'package:fittracker/utils/validators.dart';
 
 void main() {
@@ -177,6 +178,54 @@ void main() {
       );
 
       expect(provider.selectedDate, equals(validMidDate));
+    });
+
+    test('canLogFood is true only for today and false for previous dates', () async {
+      final provider = NutritionProvider();
+      final today = DateUtils.dateOnly(DateTime.now());
+      final pastDate = today.subtract(const Duration(days: 2));
+
+      expect(provider.canLogFood, isTrue);
+
+      await provider.changeDate(
+        '',
+        pastDate,
+        minDate: today.subtract(const Duration(days: 10)),
+        maxDate: today,
+      );
+
+      expect(provider.canLogFood, isFalse);
+    });
+
+    test('addFoodLog fails and rejects logging when selected date is in the past', () async {
+      final provider = NutritionProvider();
+      final today = DateUtils.dateOnly(DateTime.now());
+      final pastDate = today.subtract(const Duration(days: 1));
+
+      await provider.changeDate(
+        '',
+        pastDate,
+        minDate: today.subtract(const Duration(days: 10)),
+        maxDate: today,
+      );
+
+      final success = await provider.addFoodLog(
+        userId: 'test_user',
+        food: FoodModel(
+          id: 'apple',
+          name: 'Apple',
+          servingSize: '1 medium',
+          calories: 95,
+          protein: 0.5,
+          carbs: 25,
+          fat: 0.3,
+        ),
+        quantity: 1.0,
+        mealType: 'Snack',
+      );
+
+      expect(success, isFalse);
+      expect(provider.errorMessage, contains('Food can only be logged for today'));
     });
   });
 

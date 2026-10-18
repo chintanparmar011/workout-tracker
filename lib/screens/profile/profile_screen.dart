@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
 import 'settings_screen.dart';
@@ -58,13 +59,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundColor: Colors.deepOrange.withValues(alpha: 0.15),
+                  backgroundColor: AppTheme.crimsonBerry.withValues(alpha: 0.15),
                   child: Text(
                     user.name.isNotEmpty ? user.name[0].toUpperCase() : 'A',
                     style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.deepOrange,
+                      color: AppTheme.crimsonBerryLight,
                     ),
                   ),
                 ),
@@ -135,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ListTile(
                   leading: const Icon(
                     Icons.flag_outlined,
-                    color: Colors.deepOrange,
+                    color: AppTheme.crimsonBerryLight,
                   ),
                   title: const Text('Fitness Goal'),
                   subtitle: Text(
@@ -151,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ListTile(
                   leading: const Icon(
                     Icons.bar_chart,
-                    color: Colors.deepOrange,
+                    color: AppTheme.crimsonBerryLight,
                   ),
                   title: const Text('Fitness Level'),
                   subtitle: Text(user.fitnessLevel.toUpperCase()),
@@ -162,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ListTile(
                   leading: const Icon(
                     Icons.calendar_today,
-                    color: Colors.deepOrange,
+                    color: AppTheme.crimsonBerryLight,
                   ),
                   title: const Text('Available Days'),
                   subtitle: Text(
@@ -186,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: ListTile(
               leading: const Icon(
                 Icons.settings_outlined,
-                color: Colors.deepOrange,
+                color: AppTheme.crimsonBerryLight,
               ),
               title: const Text(
                 'Settings',

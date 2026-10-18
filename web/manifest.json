@@ -3,9 +3,9 @@
     "short_name": "OmniFit",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#090B12",
+    "theme_color": "#BA0C48",
+    "description": "Your intelligent all-in-one fitness companion.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

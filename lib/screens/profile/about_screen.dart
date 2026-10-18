@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../app/theme.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -18,13 +19,13 @@ class AboutScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.deepOrange.withValues(alpha: 0.1),
+                    color: AppTheme.crimsonBerry.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.fitness_center,
                     size: 48,
-                    color: Colors.deepOrange,
+                    color: AppTheme.crimsonBerryLight,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -131,7 +132,7 @@ class AboutScreen extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            color: Colors.deepOrange.withValues(alpha: 0.05),
+            color: AppTheme.crimsonBerry.withValues(alpha: 0.08),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -161,10 +162,10 @@ class AboutScreen extends StatelessWidget {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppTheme.slateCardElevated,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.deepOrange.withValues(alpha: 0.3),
+                          color: AppTheme.crimsonBerry.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -172,7 +173,7 @@ class AboutScreen extends StatelessWidget {
                         children: const [
                           Icon(
                             Icons.email_outlined,
-                            color: Colors.deepOrange,
+                            color: AppTheme.crimsonBerryLight,
                             size: 20,
                           ),
                           SizedBox(width: 10),
@@ -180,7 +181,7 @@ class AboutScreen extends StatelessWidget {
                             'ischintan223@gmail.com',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.deepOrange,
+                              color: AppTheme.crimsonBerryLight,
                               fontSize: 15,
                             ),
                           ),
@@ -222,7 +223,7 @@ class _FeatureBullet extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: Colors.deepOrange, size: 22),
+        Icon(icon, color: AppTheme.crimsonBerryLight, size: 22),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -261,7 +262,7 @@ class _StepBullet extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 12,
-          backgroundColor: Colors.deepOrange,
+          backgroundColor: AppTheme.crimsonBerry,
           child: Text(
             step,
             style: const TextStyle(

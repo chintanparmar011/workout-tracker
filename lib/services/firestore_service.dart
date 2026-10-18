@@ -50,10 +50,24 @@ class FirestoreService {
 
   Future<FirestoreResult> getUserProfile(String uid) async {
     try {
+      try {
+        final cacheDoc = await _usersRef
+            .doc(uid)
+            .get(const GetOptions(source: Source.cache));
+        if (cacheDoc.exists && cacheDoc.data() != null) {
+          final user = UserModel.fromMap(cacheDoc.data() as Map<String, dynamic>);
+          // Refresh from server in background without blocking
+          _usersRef.doc(uid).get(const GetOptions(source: Source.server)).catchError((_) => cacheDoc);
+          return FirestoreResult.success(user);
+        }
+      } catch (_) {
+        // Cache miss or mock environment, fallback to standard get
+      }
+
       final doc = await _usersRef
           .doc(uid)
           .get()
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 10));
       if (!doc.exists || doc.data() == null) {
         return FirestoreResult.success(null);
       }

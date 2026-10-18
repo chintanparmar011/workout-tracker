@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import '../../app/theme.dart';
 import '../../models/running_session_model.dart';
 import '../../utils/google_maps_checker.dart';
 import '../../widgets/open_street_map_widget.dart';
@@ -56,7 +57,7 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
                 Polyline(
                   polylineId: const PolylineId('run_route'),
                   points: routeCoordinates,
-                  color: Colors.deepOrange,
+                  color: AppTheme.crimsonBerryLight,
                   width: 5,
                 ),
               }
@@ -218,7 +219,7 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
                           icon: Icons.straighten,
                           title: 'Distance',
                           value: widget.session.formattedDistance,
-                          color: Colors.deepOrange,
+                          color: AppTheme.crimsonBerryLight,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -252,7 +253,7 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
                           icon: Icons.local_fire_department,
                           title: 'Calories',
                           value: '~${widget.session.calories} kcal',
-                          color: Colors.orange,
+                          color: AppTheme.crimsonBerryLight,
                         ),
                       ),
                     ],
@@ -266,13 +267,13 @@ class _RunDetailsScreenState extends State<RunDetailsScreen> {
                             fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 6),
                     Text(widget.session.notes!,
-                        style: TextStyle(color: Colors.grey[800], fontSize: 14)),
+                        style: const TextStyle(color: Colors.white70, fontSize: 14)),
                   ],
                   const SizedBox(height: 32),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB4F000),
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppTheme.crimsonBerry,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),

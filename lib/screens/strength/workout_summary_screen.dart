@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../providers/workout_provider.dart';
 import '../../models/workout_record_model.dart';
 import '../../widgets/workout_story_card.dart';
@@ -38,7 +39,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
           children: [
             const Icon(
               Icons.check_circle,
-              color: Color(0xFFB4F000),
+              color: AppTheme.crimsonBerryLight,
               size: 72,
             ),
             const SizedBox(height: 16),
@@ -105,14 +106,14 @@ class WorkoutSummaryScreen extends StatelessWidget {
                 color: completionPct >= 90
                     ? Colors.green.withValues(alpha: 0.1)
                     : (completionPct >= 70
-                        ? Colors.orange.withValues(alpha: 0.1)
+                        ? AppTheme.crimsonBerry.withValues(alpha: 0.15)
                         : Colors.blue.withValues(alpha: 0.1)),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: completionPct >= 90
                       ? Colors.green.withValues(alpha: 0.3)
                       : (completionPct >= 70
-                          ? Colors.orange.withValues(alpha: 0.3)
+                          ? AppTheme.crimsonBerry.withValues(alpha: 0.4)
                           : Colors.blue.withValues(alpha: 0.3)),
                 ),
               ),
@@ -124,7 +125,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                         : (completionPct >= 70 ? Icons.thumb_up : Icons.fitness_center),
                     color: completionPct >= 90
                         ? Colors.green
-                        : (completionPct >= 70 ? Colors.orange : Colors.blue),
+                        : (completionPct >= 70 ? AppTheme.crimsonBerryLight : Colors.blue),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -147,7 +148,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     label: 'Volume Lifted',
                     value: '${totalVolume.toStringAsFixed(0)} kg',
                     icon: Icons.fitness_center,
-                    valueColor: const Color(0xFFB4F000),
+                    valueColor: AppTheme.crimsonBerryLight,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -157,7 +158,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     label: 'Calories Burned',
                     value: '$calories kcal',
                     icon: Icons.local_fire_department,
-                    valueColor: const Color(0xFFFF6B4A),
+                    valueColor: AppTheme.crimsonBerryLight,
                   ),
                 ),
               ],
@@ -206,7 +207,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
                     label: 'Completion',
                     value: '${completionPct.toStringAsFixed(1)}%',
                     icon: Icons.percent,
-                    valueColor: completionPct >= 90 ? Colors.green : Colors.deepOrange,
+                    valueColor: completionPct >= 90 ? Colors.green : AppTheme.crimsonBerryLight,
                   ),
                 ),
               ],
@@ -216,8 +217,8 @@ class WorkoutSummaryScreen extends StatelessWidget {
             // Share Story Card Button
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB4F000),
-                foregroundColor: Colors.black,
+                backgroundColor: AppTheme.crimsonBerry,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
@@ -263,7 +264,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF161922) : Colors.white,
+        color: isDark ? AppTheme.obsidianCard : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey.withValues(alpha: 0.15),
@@ -278,7 +279,7 @@ class WorkoutSummaryScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, size: 24, color: valueColor ?? (isDark ? const Color(0xFFB4F000) : Colors.deepOrange)),
+          Icon(icon, size: 24, color: valueColor ?? (isDark ? AppTheme.crimsonBerryLight : AppTheme.crimsonBerry)),
           const SizedBox(height: 8),
           Text(
             value,

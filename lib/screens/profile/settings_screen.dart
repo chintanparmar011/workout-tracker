@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/theme_provider.dart';
 import 'edit_profile_screen.dart';
 import 'about_screen.dart';
 
@@ -9,8 +7,6 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = context.watch<ThemeProvider>();
-    final isDark = themeProvider.isDarkMode;
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
@@ -54,22 +50,29 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
                 const Divider(height: 1),
-                SwitchListTile.adaptive(
-                  secondary: Icon(
-                    isDark ? Icons.dark_mode : Icons.light_mode,
-                    color: primaryColor,
+                ListTile(
+                  leading: const Icon(
+                    Icons.palette_outlined,
+                    color: Color(0xFFBA0C48),
                   ),
-                  title: const Text('Dark Mode (Cyber Volt)'),
-                  subtitle: Text(
-                    isDark
-                        ? 'Matte Obsidian & Electric Lime active'
-                        : 'Clean high-contrast Light Theme',
+                  title: const Text('App Appearance'),
+                  subtitle: const Text('Crimson Berry & Obsidian (Unified Theme)'),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFBA0C48).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFBA0C48), width: 1),
+                    ),
+                    child: const Text(
+                      'ACTIVE',
+                      style: TextStyle(
+                        color: Color(0xFFE91E63),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  value: isDark,
-                  activeThumbColor: const Color(0xFFB4F000),
-                  onChanged: (val) {
-                    themeProvider.toggleTheme(val);
-                  },
                 ),
               ],
             ),

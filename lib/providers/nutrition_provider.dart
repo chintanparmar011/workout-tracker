@@ -20,6 +20,9 @@ class NutritionProvider extends ChangeNotifier {
   String? _errorMessage;
 
   DateTime get selectedDate => _selectedDate;
+  bool get isToday =>
+      DateUtils.isSameDay(_selectedDate, DateUtils.dateOnly(DateTime.now()));
+  bool get canLogFood => isToday;
   List<FoodLogModel> get dailyLogs => _dailyLogs;
   List<FoodLogModel> get historyLogs => _historyLogs;
   List<FoodModel> get searchResults => _searchResults;
@@ -167,6 +170,13 @@ class NutritionProvider extends ChangeNotifier {
     required double quantity,
     required String mealType,
   }) async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    if (!DateUtils.isSameDay(_selectedDate, today)) {
+      _errorMessage = 'Food can only be logged for today.';
+      notifyListeners();
+      return false;
+    }
+
     if (userId.trim().isEmpty) {
       _errorMessage = 'User is not logged in.';
       notifyListeners();

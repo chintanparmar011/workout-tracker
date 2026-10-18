@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/nutrition_provider.dart';
 import '../../models/user_model.dart';
@@ -38,13 +39,17 @@ class _NutritionScreenState extends State<NutritionScreen>
 
   @override
   Widget build(BuildContext context) {
+    final nutrition = context.watch<NutritionProvider>();
+    final canLog = nutrition.canLogFood;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nutrition & Diet'),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.deepOrange,
-          labelColor: Colors.deepOrange,
+          indicatorColor: primaryColor,
+          labelColor: primaryColor,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(text: 'Daily Tracker'),
@@ -56,18 +61,32 @@ class _NutritionScreenState extends State<NutritionScreen>
         controller: _tabController,
         children: [const _DailyTrackerTab(), const _DietPlansTab()],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'nutrition_log_food_fab',
-        onPressed: () => _openAddFoodDialog(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Log Food'),
-        backgroundColor: Colors.deepOrange,
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton: canLog
+          ? FloatingActionButton.extended(
+              heroTag: 'nutrition_log_food_fab',
+              onPressed: () => _openAddFoodDialog(context),
+              icon: const Icon(Icons.add),
+              label: const Text('Log Food'),
+              backgroundColor: primaryColor,
+              foregroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black
+                  : Colors.white,
+            )
+          : null,
     );
   }
 
   void _openAddFoodDialog(BuildContext context) {
+    final nutrition = context.read<NutritionProvider>();
+    if (!nutrition.canLogFood) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Food can only be logged for today.'),
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -181,7 +200,7 @@ class _DailyTrackerTab extends StatelessWidget {
                         Icon(
                           Icons.calendar_today,
                           size: 16,
-                          color: isToday ? Colors.deepOrange : Colors.grey[700],
+                          color: isToday ? AppTheme.crimsonBerryLight : Colors.white70,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -191,7 +210,7 @@ class _DailyTrackerTab extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: isToday ? Colors.deepOrange : Colors.black87,
+                            color: isToday ? AppTheme.crimsonBerryLight : Colors.white,
                           ),
                         ),
                       ],
@@ -233,6 +252,45 @@ class _DailyTrackerTab extends StatelessWidget {
               ],
             ),
           ),
+          if (!isToday) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.history_toggle_off, size: 20, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Viewing intake history for ${DateFormat('MMM d, yyyy').format(currentDate)}. Food logging is only allowed for today.',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      nutrition.changeDate(
+                        currentUserId,
+                        today,
+                        minDate: accountCreatedAt,
+                        maxDate: today,
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text('Today', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
 
           // Daily Calories Card (Section 20)
@@ -261,7 +319,7 @@ class _DailyTrackerTab extends StatelessWidget {
                       _buildCalorieCol(
                         'Consumed',
                         '${consumedCalories.toStringAsFixed(0)} kcal',
-                        Colors.deepOrange,
+                        AppTheme.crimsonBerryLight,
                       ),
                       _buildCalorieCol(
                         'Remaining',
@@ -277,8 +335,8 @@ class _DailyTrackerTab extends StatelessWidget {
                       value: targetCalories > 0
                           ? (consumedCalories / targetCalories).clamp(0.0, 1.0)
                           : 0.0,
-                      backgroundColor: Colors.grey[200],
-                      color: Colors.deepOrange,
+                      backgroundColor: Colors.white12,
+                      color: AppTheme.crimsonBerry,
                       minHeight: 8,
                     ),
                   ),
@@ -300,7 +358,7 @@ class _DailyTrackerTab extends StatelessWidget {
                     nutrition.totalCarbs,
                     targetCarbs.toDouble(),
                     'g',
-                    Colors.amber[800]!,
+                    AppTheme.crimsonBerryLight,
                   ),
                   const SizedBox(height: 12),
                   _buildMacroBar(
@@ -353,17 +411,22 @@ class _DailyTrackerTab extends StatelessWidget {
                   children: [
                     Icon(Icons.restaurant, size: 48, color: Colors.grey[400]),
                     const SizedBox(height: 12),
-                    const Text(
-                      'No food logged for this day',
-                      style: TextStyle(
+                    Text(
+                      isToday
+                          ? 'No food logged for today'
+                          : 'No food logged for this day',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Tap "Log Food" below to search and add meals.',
+                      isToday
+                          ? 'Tap "Log Food" below to search and add meals.'
+                          : 'Past days are view-only. Food can only be logged for today.',
                       style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -378,10 +441,10 @@ class _DailyTrackerTab extends StatelessWidget {
                 ),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.deepOrange.withValues(alpha: 0.1),
+                    backgroundColor: AppTheme.crimsonBerry.withValues(alpha: 0.15),
                     child: Icon(
                       _getMealIcon(log.mealType),
-                      color: Colors.deepOrange,
+                      color: AppTheme.crimsonBerryLight,
                       size: 20,
                     ),
                   ),
@@ -393,15 +456,17 @@ class _DailyTrackerTab extends StatelessWidget {
                     '${log.mealType.toUpperCase()} • ${(log.calories * log.quantity).toStringAsFixed(0)} kcal (P: ${(log.protein * log.quantity).toStringAsFixed(1)}g, C: ${(log.carbs * log.quantity).toStringAsFixed(1)}g, F: ${(log.fat * log.quantity).toStringAsFixed(1)}g)',
                     style: const TextStyle(fontSize: 12),
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      size: 20,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () =>
-                        nutrition.deleteFoodLog(currentUserId, log.id),
-                  ),
+                  trailing: isToday
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            size: 20,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () =>
+                              nutrition.deleteFoodLog(currentUserId, log.id),
+                        )
+                      : null,
                 ),
               ),
             ),
@@ -496,7 +561,7 @@ class _DietPlansTab extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          color: Colors.deepOrange.withValues(alpha: 0.05),
+          color: AppTheme.crimsonBerry.withValues(alpha: 0.08),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -506,7 +571,7 @@ class _DietPlansTab extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.lightbulb_outline,
-                      color: Colors.deepOrange,
+                      color: AppTheme.crimsonBerryLight,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -515,7 +580,7 @@ class _DietPlansTab extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange,
+                          color: AppTheme.crimsonBerryLight,
                         ),
                       ),
                     ),
@@ -524,7 +589,7 @@ class _DietPlansTab extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   plan.description,
-                  style: TextStyle(color: Colors.grey[800], fontSize: 14),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -572,14 +637,14 @@ class _DietPlansTab extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.deepOrange.withValues(alpha: 0.1),
+                          color: AppTheme.crimsonBerry.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           '~${m.estimatedCalories} kcal • ${m.estimatedProtein}g protein',
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Colors.deepOrange,
+                            color: AppTheme.crimsonBerryLight,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -777,6 +842,16 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                                 ),
                               ),
                               onPressed: () async {
+                                if (!nutrition.canLogFood) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Food can only be logged for today.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
                                 if (currentUserId.trim().isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -982,8 +1057,8 @@ class _CalorieHistorySheetState extends State<_CalorieHistorySheet> {
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(
                                 color: isCurrentDay
-                                    ? Colors.deepOrange
-                                    : Colors.grey.shade200,
+                                    ? AppTheme.crimsonBerry
+                                    : AppTheme.slateBorder,
                                 width: isCurrentDay ? 1.5 : 1,
                               ),
                             ),
@@ -1018,8 +1093,8 @@ class _CalorieHistorySheetState extends State<_CalorieHistorySheet> {
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 15,
                                                 color: isToday
-                                                    ? Colors.deepOrange
-                                                    : Colors.black87,
+                                                    ? AppTheme.crimsonBerryLight
+                                                    : Colors.white,
                                               ),
                                             ),
                                             if (isCurrentDay) ...[
@@ -1031,15 +1106,15 @@ class _CalorieHistorySheetState extends State<_CalorieHistorySheet> {
                                                   vertical: 2,
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.deepOrange
-                                                      .withValues(alpha: 0.1),
+                                                  color: AppTheme.crimsonBerry
+                                                      .withValues(alpha: 0.15),
                                                   borderRadius:
                                                       BorderRadius.circular(6),
                                                 ),
                                                 child: const Text(
                                                   'SELECTED',
                                                   style: TextStyle(
-                                                    color: Colors.deepOrange,
+                                                    color: AppTheme.crimsonBerryLight,
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -1053,8 +1128,8 @@ class _CalorieHistorySheetState extends State<_CalorieHistorySheet> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: dayCalories > 0
-                                                ? Colors.black87
-                                                : Colors.grey,
+                                                ? Colors.white
+                                                : Colors.white54,
                                           ),
                                         ),
                                       ],
@@ -1064,10 +1139,10 @@ class _CalorieHistorySheetState extends State<_CalorieHistorySheet> {
                                       borderRadius: BorderRadius.circular(4),
                                       child: LinearProgressIndicator(
                                         value: progress,
-                                        backgroundColor: Colors.grey[200],
+                                        backgroundColor: Colors.white12,
                                         color: progress >= 1.0
                                             ? Colors.green
-                                            : Colors.deepOrange,
+                                            : AppTheme.crimsonBerry,
                                         minHeight: 6,
                                       ),
                                     ),
@@ -1082,14 +1157,14 @@ class _CalorieHistorySheetState extends State<_CalorieHistorySheet> {
                                               : '${logs.length} item${logs.length > 1 ? 's' : ''} logged • ${dayProtein.toStringAsFixed(0)}g protein',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.grey[600],
+                                            color: Colors.grey[500],
                                           ),
                                         ),
                                         const Text(
                                           'View details →',
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.deepOrange,
+                                            color: AppTheme.crimsonBerryLight,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),

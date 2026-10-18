@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../app/theme.dart';
 import '../utils/one_rep_max_calculator.dart';
 
 /// Shows an aesthetic celebratory gold/volt modal when a user sets a new PR.
@@ -9,7 +10,7 @@ void showPrCelebrationDialog(BuildContext context, PrCheckResult pr) {
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      backgroundColor: const Color(0xFF14171F),
+      backgroundColor: AppTheme.obsidianCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
@@ -67,7 +68,7 @@ void showPrCelebrationDialog(BuildContext context, PrCheckResult pr) {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E222D),
+              color: AppTheme.obsidianCardLight,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
             ),
@@ -91,7 +92,7 @@ void showPrCelebrationDialog(BuildContext context, PrCheckResult pr) {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFFB4F000),
+                        color: AppTheme.crimsonBerryLight,
                       ),
                     ),
                   ],
@@ -129,7 +130,7 @@ void showPrCelebrationDialog(BuildContext context, PrCheckResult pr) {
               pr.reason,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0xFFB4F000),
+                color: AppTheme.crimsonBerryLight,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -141,8 +142,8 @@ void showPrCelebrationDialog(BuildContext context, PrCheckResult pr) {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB4F000),
-                foregroundColor: Colors.black,
+                backgroundColor: AppTheme.crimsonBerry,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),

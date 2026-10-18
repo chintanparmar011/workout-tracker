@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import '../app/theme.dart';
 import '../models/workout_record_model.dart';
 import '../models/running_session_model.dart';
 import '../utils/one_rep_max_calculator.dart';
@@ -47,12 +48,12 @@ class WorkoutStoryCard extends StatelessWidget {
             ],
           ),
           border: Border.all(
-            color: const Color(0xFFB4F000).withValues(alpha: 0.35),
+            color: AppTheme.crimsonBerryLight.withValues(alpha: 0.35),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFB4F000).withValues(alpha: 0.12),
+              color: AppTheme.crimsonBerry.withValues(alpha: 0.2),
               blurRadius: 28,
               spreadRadius: 2,
             ),
@@ -71,12 +72,12 @@ class WorkoutStoryCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFB4F000),
+                        color: AppTheme.crimsonBerry,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.bolt,
-                        color: Colors.black,
+                        color: Colors.white,
                         size: 18,
                       ),
                     ),
@@ -96,7 +97,7 @@ class WorkoutStoryCard extends StatelessWidget {
                         Text(
                           'ATHLETICS',
                           style: TextStyle(
-                            color: Color(0xFFB4F000),
+                            color: AppTheme.crimsonBerryLight,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 2.5,
@@ -163,7 +164,7 @@ class WorkoutStoryCard extends StatelessWidget {
                   label: 'VOLUME',
                   value:
                       '${workoutRecord!.totalVolumeKg.toStringAsFixed(0)} kg',
-                  accent: const Color(0xFFB4F000),
+                  accent: AppTheme.crimsonBerryLight,
                   icon: Icons.fitness_center,
                 ),
                 _MetricItem(
@@ -182,7 +183,7 @@ class WorkoutStoryCard extends StatelessWidget {
                 _MetricItem(
                   label: 'BURN ESTIMATE',
                   value: '${workoutRecord!.estimatedCaloriesBurned} kcal',
-                  accent: const Color(0xFFFF6B4A),
+                  accent: AppTheme.crimsonBerryLight,
                   icon: Icons.local_fire_department,
                 ),
               ]),
@@ -192,7 +193,7 @@ class WorkoutStoryCard extends StatelessWidget {
                   label: 'DISTANCE',
                   value:
                       '${runSession!.distanceKm.toStringAsFixed(2)} km',
-                  accent: const Color(0xFFB4F000),
+                  accent: AppTheme.crimsonBerryLight,
                   icon: Icons.straighten,
                 ),
                 _MetricItem(
@@ -210,7 +211,7 @@ class WorkoutStoryCard extends StatelessWidget {
                 _MetricItem(
                   label: 'ENERGY',
                   value: '${runSession!.calories} kcal',
-                  accent: const Color(0xFFFF6B4A),
+                  accent: AppTheme.crimsonBerryLight,
                   icon: Icons.local_fire_department,
                 ),
               ]),
@@ -238,11 +239,11 @@ class WorkoutStoryCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.bolt, color: Color(0xFFB4F000), size: 14),
-                      SizedBox(width: 4),
-                      Text(
+                      Icon(Icons.bolt, color: AppTheme.crimsonBerryLight, size: 14),
+                      const SizedBox(width: 4),
+                      const Text(
                         'TRAINED WITH OMNIFIT',
                         style: TextStyle(
                           color: Colors.white70,
@@ -256,7 +257,7 @@ class WorkoutStoryCard extends StatelessWidget {
                   Text(
                     '#NOEXCUSES',
                     style: TextStyle(
-                      color: const Color(0xFFB4F000).withValues(alpha: 0.9),
+                      color: AppTheme.crimsonBerryLight.withValues(alpha: 0.9),
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1.0,
@@ -433,12 +434,12 @@ class WorkoutStoryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFB4F000).withValues(alpha: 0.12),
+              color: AppTheme.crimsonBerry.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.bolt,
-              color: Color(0xFFB4F000),
+              color: AppTheme.crimsonBerryLight,
               size: 28,
             ),
           ),
@@ -582,8 +583,8 @@ void showWorkoutStoryModal(
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB4F000),
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppTheme.crimsonBerry,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

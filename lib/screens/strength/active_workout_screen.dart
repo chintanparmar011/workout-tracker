@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../models/exercise_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/workout_provider.dart';
@@ -219,13 +220,13 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                                         children: [
                                           CircleAvatar(
                                             radius: 12,
-                                            backgroundColor: Colors.deepOrange.withValues(alpha: 0.1),
+                                            backgroundColor: AppTheme.crimsonBerry.withValues(alpha: 0.15),
                                             child: Text(
                                               '${idx + 1}',
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.deepOrange,
+                                                color: AppTheme.crimsonBerryLight,
                                               ),
                                             ),
                                           ),

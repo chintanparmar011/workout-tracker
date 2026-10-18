@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../models/workout_model.dart';
 import '../../models/exercise_model.dart';
 import '../../providers/auth_provider.dart';
@@ -271,69 +272,95 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _selectedMuscleCategory,
-                            decoration: const InputDecoration(
-                              labelText: 'Category',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: _categories.map((c) {
-                              return DropdownMenuItem(value: c, child: Text(c));
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _selectedMuscleCategory = val);
-                              }
-                            },
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isNarrow = constraints.maxWidth < 360;
+
+                        final categoryDropdown = DropdownButtonFormField<String>(
+                          initialValue: _selectedMuscleCategory,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Category',
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _selectedFitnessLevel,
-                            decoration: const InputDecoration(
-                              labelText: 'Difficulty',
-                              border: OutlineInputBorder(),
+                          items: _categories.map((c) {
+                            return DropdownMenuItem(
+                              value: c,
+                              child: Text(c, overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _selectedMuscleCategory = val);
+                            }
+                          },
+                        );
+
+                        final difficultyDropdown = DropdownButtonFormField<String>(
+                          initialValue: _selectedFitnessLevel,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Difficulty',
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'beginner',
+                              child: Text('Beginner', overflow: TextOverflow.ellipsis),
                             ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'beginner',
-                                child: Text('Beginner'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'intermediate',
-                                child: Text('Intermediate'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'advanced',
-                                child: Text('Advanced'),
-                              ),
+                            DropdownMenuItem(
+                              value: 'intermediate',
+                              child: Text('Intermediate', overflow: TextOverflow.ellipsis),
+                            ),
+                            DropdownMenuItem(
+                              value: 'advanced',
+                              child: Text('Advanced', overflow: TextOverflow.ellipsis),
+                            ),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _selectedFitnessLevel = val);
+                            }
+                          },
+                        );
+
+                        if (isNarrow) {
+                          return Column(
+                            children: [
+                              categoryDropdown,
+                              const SizedBox(height: 14),
+                              difficultyDropdown,
                             ],
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _selectedFitnessLevel = val);
-                              }
-                            },
-                          ),
-                        ),
-                      ],
+                          );
+                        }
+
+                        return Row(
+                          children: [
+                            Expanded(child: categoryDropdown),
+                            const SizedBox(width: 12),
+                            Expanded(child: difficultyDropdown),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Estimated Duration:',
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                        const Expanded(
+                          child: Text(
+                            'Estimated Duration:',
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Text(
                           '$_estimatedDuration mins',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
+                            color: AppTheme.crimsonBerryLight,
                             fontSize: 16,
                           ),
                         ),
@@ -344,7 +371,7 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
                       min: 15,
                       max: 120,
                       divisions: 21,
-                      activeColor: Colors.deepOrange,
+                      activeColor: AppTheme.crimsonBerry,
                       label: '$_estimatedDuration mins',
                       onChanged: (val) {
                         setState(() => _estimatedDuration = val.round());
@@ -359,12 +386,15 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
 
             // Exercise Selection Header with Counter
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Select Exercises',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const Expanded(
+                  child: Text(
+                    'Select Exercises',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -372,8 +402,8 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: _selectedExerciseIds.isNotEmpty
-                        ? Colors.deepOrange
-                        : Colors.grey[400],
+                        ? AppTheme.crimsonBerry
+                        : Colors.grey[700],
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -430,10 +460,10 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
                     child: FilterChip(
                       label: Text(group),
                       selected: isSelected,
-                      selectedColor: Colors.deepOrange.withValues(alpha: 0.2),
-                      checkmarkColor: Colors.deepOrange,
+                      selectedColor: AppTheme.crimsonBerry.withValues(alpha: 0.2),
+                      checkmarkColor: AppTheme.crimsonBerryLight,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.deepOrange : Colors.black87,
+                        color: isSelected ? AppTheme.crimsonBerryLight : null,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -476,14 +506,14 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
                       borderRadius: BorderRadius.circular(10),
                       side: BorderSide(
                         color: isChecked
-                            ? Colors.deepOrange
+                            ? AppTheme.crimsonBerry
                             : Colors.transparent,
                         width: 1.5,
                       ),
                     ),
                     child: CheckboxListTile(
                       value: isChecked,
-                      activeColor: Colors.deepOrange,
+                      activeColor: AppTheme.crimsonBerry,
                       title: Text(
                         exercise.displayName,
                         style: TextStyle(
@@ -513,16 +543,19 @@ class _CreateCustomPlanScreenState extends State<CreateCustomPlanScreen> {
             ElevatedButton.icon(
               onPressed: _isSaving ? null : _savePlan,
               icon: const Icon(Icons.check_circle_outline),
-              label: Text(
-                _isSaving
-                    ? 'Saving Custom Plan...'
-                    : 'Save Custom Workout Plan (${_selectedExerciseIds.length} exercises)',
-                style: const TextStyle(fontSize: 16),
+              label: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  _isSaving
+                      ? 'Saving Custom Plan...'
+                      : 'Save Custom Workout Plan (${_selectedExerciseIds.length} exercises)',
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
+                backgroundColor: AppTheme.crimsonBerry,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

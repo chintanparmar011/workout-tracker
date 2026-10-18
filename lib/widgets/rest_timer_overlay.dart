@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../app/theme.dart';
 
 /// Floating, non-blocking Rest Timer for active gym lifters.
 ///
@@ -99,9 +100,9 @@ class _RestTimerOverlayState extends State<RestTimerOverlay> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF14171F),
+                color: AppTheme.obsidianCard,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFB4F000), width: 1.5),
+                border: Border.all(color: AppTheme.crimsonBerry, width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.5),
@@ -113,7 +114,7 @@ class _RestTimerOverlayState extends State<RestTimerOverlay> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.timer, color: Color(0xFFB4F000), size: 16),
+                  Icon(Icons.timer, color: AppTheme.crimsonBerryLight, size: 16),
                   const SizedBox(width: 6),
                   Text(
                     _formatTime(_remaining),
@@ -139,9 +140,9 @@ class _RestTimerOverlayState extends State<RestTimerOverlay> {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF14171F),
+          color: AppTheme.obsidianCard,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: const Color(0xFFB4F000).withValues(alpha: 0.4), width: 1.5),
+          border: Border.all(color: AppTheme.crimsonBerryLight.withValues(alpha: 0.4), width: 1.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.6),
@@ -157,11 +158,11 @@ class _RestTimerOverlayState extends State<RestTimerOverlay> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.fitness_center, color: Color(0xFFB4F000), size: 16),
-                    SizedBox(width: 6),
-                    Text(
+                    Icon(Icons.fitness_center, color: AppTheme.crimsonBerryLight, size: 16),
+                    const SizedBox(width: 6),
+                    const Text(
                       'REST TIMER',
                       style: TextStyle(
                         color: Colors.white70,
@@ -205,7 +206,7 @@ class _RestTimerOverlayState extends State<RestTimerOverlay> {
                         value: progress,
                         strokeWidth: 4,
                         backgroundColor: Colors.white12,
-                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFB4F000)),
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.crimsonBerryLight),
                       ),
                       Text(
                         '${_remaining}s',
@@ -227,7 +228,7 @@ class _RestTimerOverlayState extends State<RestTimerOverlay> {
                       Text(
                         _formatTime(_remaining),
                         style: const TextStyle(
-                          color: Color(0xFFB4F000),
+                          color: AppTheme.crimsonBerryLight,
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 1.0,
@@ -277,8 +278,8 @@ class _RestTimerOverlayState extends State<RestTimerOverlay> {
                   flex: 2,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB4F000),
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppTheme.crimsonBerry,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),

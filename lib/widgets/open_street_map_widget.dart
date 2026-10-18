@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../app/theme.dart';
 import '../models/running_session_model.dart';
 import '../utils/api_constants.dart';
 
@@ -52,6 +53,7 @@ class _OpenStreetMapWidgetState extends State<OpenStreetMapWidget> {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
+        if (width <= 0 || height <= 0) return const SizedBox.shrink();
 
         final z = _zoom.round();
         final n = 1 << z; // 2^z
@@ -261,7 +263,7 @@ class _OsmRoutePainter extends CustomPainter {
 
       // Core route polyline
       final corePaint = Paint()
-        ..color = Colors.deepOrangeAccent
+        ..color = AppTheme.crimsonBerryLight
         ..strokeWidth = 4.0
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round

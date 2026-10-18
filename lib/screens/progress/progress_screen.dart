@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/progress_provider.dart';
 import '../../providers/running_provider.dart';
@@ -119,8 +120,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                     decoration: BoxDecoration(
                                       color: progressProvider.weightChange <= 0
                                           ? Colors.green.withValues(alpha: 0.1)
-                                          : Colors.orange.withValues(
-                                              alpha: 0.1,
+                                          : AppTheme.crimsonBerry.withValues(
+                                              alpha: 0.15,
                                             ),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
@@ -130,7 +131,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                         color:
                                             progressProvider.weightChange <= 0
                                                 ? Colors.green
-                                                : Colors.orange,
+                                                : AppTheme.crimsonBerryLight,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -236,13 +237,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                     LineChartBarData(
                                       spots: progressProvider.weightChartSpots,
                                       isCurved: true,
-                                      color: Colors.deepOrange,
+                                      color: AppTheme.crimsonBerryLight,
                                       barWidth: 3,
                                       isStrokeCapRound: true,
                                       dotData: const FlDotData(show: true),
                                       belowBarData: BarAreaData(
                                         show: true,
-                                        color: Colors.deepOrange.withValues(
+                                        color: AppTheme.crimsonBerry.withValues(
                                           alpha: 0.1,
                                         ),
                                       ),
@@ -281,7 +282,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           label: 'Sets Completed',
                           value: '${progressProvider.totalSets}',
                           icon: Icons.repeat,
-                          color: Colors.orange,
+                          color: AppTheme.crimsonBerryLight,
                         ),
                       ),
                     ],
@@ -357,7 +358,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           label: 'Longest Run',
                           value: '${runningProvider.longestRunKm.toStringAsFixed(1)} km',
                           icon: Icons.emoji_events,
-                          color: Colors.amber[800]!,
+                          color: AppTheme.crimsonBerryLight,
                         ),
                       ),
                     ],
@@ -378,13 +379,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFF161822),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF232636)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -393,16 +395,27 @@ class _ProgressScreenState extends State<ProgressScreen> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: color.withValues(alpha: 0.1),
+            backgroundColor: color.withValues(alpha: 0.15),
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFFA0A5B5),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );

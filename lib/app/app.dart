@@ -8,11 +8,12 @@ import '../providers/progress_provider.dart';
 import '../providers/nutrition_provider.dart';
 import '../providers/running_provider.dart';
 import '../providers/ai_coach_provider.dart';
-import '../screens/auth/login_screen.dart';
+import '../screens/landing/landing_screen.dart';
 import '../screens/auth/verify_email_screen.dart';
 import '../screens/onboarding/personal_info_screen.dart';
 import '../screens/main_navigation_screen.dart';
 import 'theme.dart';
+import '../widgets/app_brand.dart';
 
 class FitTrackApp extends StatelessWidget {
   const FitTrackApp({super.key});
@@ -54,19 +55,43 @@ class _AuthGate extends StatelessWidget {
     final authProvider = context.watch<AuthProvider>();
 
     if (authProvider.isInitializing) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: AppTheme.obsidianBlack,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppBrandMark(size: 58),
+              SizedBox(height: 20),
+              CircularProgressIndicator(color: AppTheme.crimsonBerryLight),
+            ],
+          ),
+        ),
+      );
     }
 
     if (!authProvider.isLoggedIn) {
-      return const LoginScreen();
+      return const LandingScreen();
     }
 
     if (!authProvider.isEmailVerified) {
       return const VerifyEmailScreen();
     }
 
-    if (authProvider.isCheckingProfile) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (authProvider.isCheckingProfile && authProvider.userProfile == null) {
+      return const Scaffold(
+        backgroundColor: AppTheme.obsidianBlack,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppBrandMark(size: 58),
+              SizedBox(height: 20),
+              CircularProgressIndicator(color: AppTheme.crimsonBerryLight),
+            ],
+          ),
+        ),
+      );
     }
 
     if (!authProvider.hasCompletedOnboarding) {

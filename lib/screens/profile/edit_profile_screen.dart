@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -179,10 +180,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 return FilterChip(
                   label: Text(day),
                   selected: isSelected,
-                  selectedColor: Colors.deepOrange.withValues(alpha: 0.2),
-                  checkmarkColor: Colors.deepOrange,
+                  selectedColor: AppTheme.crimsonBerry.withValues(alpha: 0.2),
+                  checkmarkColor: AppTheme.crimsonBerryLight,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.deepOrange[800] : Colors.black87,
+                    color: isSelected ? AppTheme.crimsonBerryLight : Colors.white70,
                     fontWeight: isSelected
                         ? FontWeight.bold
                         : FontWeight.normal,
@@ -211,7 +212,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
+                backgroundColor: AppTheme.crimsonBerry,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

@@ -20,7 +20,7 @@ class AuthProvider extends ChangeNotifier {
   UserModel? get userProfile => _userProfile;
   bool get isLoading => _isLoading;
   bool get isInitializing => _isInitializing;
-  bool get isCheckingProfile => _isCheckingProfile;
+  bool get isCheckingProfile => _isCheckingProfile || (_user != null && _userProfile == null);
   String? get errorMessage => _errorMessage;
   bool get isLoggedIn => _user != null;
   bool get isEmailVerified => _authService.isEmailVerified;
@@ -45,8 +45,22 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
   }
 
+  Future<void>? _profileFetchFuture;
+
   Future<void> checkUserProfile() async {
     if (_user == null) return;
+    if (_profileFetchFuture != null) {
+      return _profileFetchFuture!;
+    }
+    _profileFetchFuture = _fetchUserProfileInternal();
+    try {
+      await _profileFetchFuture;
+    } finally {
+      _profileFetchFuture = null;
+    }
+  }
+
+  Future<void> _fetchUserProfileInternal() async {
     _isCheckingProfile = true;
     notifyListeners();
 
@@ -136,6 +150,9 @@ class AuthProvider extends ChangeNotifier {
     if (result.isSuccess) {
       _user = result.user;
       notifyListeners();
+      if (_user != null && _user!.emailVerified) {
+        checkUserProfile();
+      }
       return true;
     } else {
       _errorMessage = result.errorMessage;
@@ -156,7 +173,7 @@ class AuthProvider extends ChangeNotifier {
       _user = result.user;
       notifyListeners();
       if (_user != null) {
-        await checkUserProfile();
+        checkUserProfile();
       }
       return true;
     } else {

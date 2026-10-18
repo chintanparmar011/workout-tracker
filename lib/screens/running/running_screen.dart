@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme.dart';
 import '../../models/running_session_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/running_provider.dart';
@@ -123,7 +124,7 @@ class _RunningScreenState extends State<RunningScreen>
                 value: MapEngine.radarVisualizer,
                 child: Row(
                   children: [
-                    Icon(Icons.radar, color: Colors.deepOrange),
+                    Icon(Icons.radar, color: AppTheme.crimsonBerryLight),
                     SizedBox(width: 10),
                     Text('GPS Radar (Vector Canvas)'),
                   ],
@@ -134,8 +135,8 @@ class _RunningScreenState extends State<RunningScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.blue,
-          labelColor: Colors.blue,
+          indicatorColor: AppTheme.crimsonBerry,
+          labelColor: AppTheme.crimsonBerryLight,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(text: 'Live Tracker'),
@@ -302,9 +303,10 @@ class _RunningScreenState extends State<RunningScreen>
             left: 16,
             right: 16,
             child: Card(
-              color: Colors.amber[100],
+              color: Colors.red.withValues(alpha: 0.15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.red.withValues(alpha: 0.4)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -312,7 +314,7 @@ class _RunningScreenState extends State<RunningScreen>
                   children: [
                     const Icon(
                       Icons.warning_amber_rounded,
-                      color: Colors.orange,
+                      color: Colors.redAccent,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -320,7 +322,7 @@ class _RunningScreenState extends State<RunningScreen>
                         runningProvider.errorMessage!,
                         style: const TextStyle(
                           fontSize: 13,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -356,7 +358,7 @@ class _RunningScreenState extends State<RunningScreen>
                       _buildLiveMetricColumn(
                         'DURATION',
                         runningProvider.formattedDuration,
-                        Colors.deepOrange,
+                        AppTheme.crimsonBerryLight,
                       ),
                     ],
                   ),
@@ -373,7 +375,7 @@ class _RunningScreenState extends State<RunningScreen>
                       _buildLiveMetricColumn(
                         'CALORIES',
                         '~${runningProvider.estimatedCalories} kcal',
-                        Colors.orange,
+                        AppTheme.crimsonBerryLight,
                       ),
                     ],
                   ),
@@ -383,12 +385,17 @@ class _RunningScreenState extends State<RunningScreen>
           ),
         ),
 
-        // Control Buttons at Bottom
+        // Control Buttons at Bottom (Elevated & centered to avoid map controls overlap)
         Positioned(
-          bottom: 24,
-          left: 24,
-          right: 24,
-          child: _buildControlsRow(runningProvider),
+          bottom: 34,
+          left: 20,
+          right: 20,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: _buildControlsRow(runningProvider),
+            ),
+          ),
         ),
       ],
     );
@@ -399,10 +406,10 @@ class _RunningScreenState extends State<RunningScreen>
       children: [
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[900],
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 2),
@@ -410,7 +417,7 @@ class _RunningScreenState extends State<RunningScreen>
           label,
           style: TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: color,
             letterSpacing: 0.5,
           ),
@@ -440,12 +447,13 @@ class _RunningScreenState extends State<RunningScreen>
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
+            backgroundColor: const Color(0xFFBA0C48),
             foregroundColor: Colors.white,
+            elevation: 8,
+            shadowColor: const Color(0xFFBA0C48).withValues(alpha: 0.5),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(28),
             ),
-            elevation: 4,
           ),
           icon: const Icon(Icons.directions_run, size: 28),
           label: const Text(
@@ -472,7 +480,7 @@ class _RunningScreenState extends State<RunningScreen>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    provider.isRunning ? Colors.amber[700] : Colors.green,
+                    provider.isRunning ? AppTheme.crimsonBerry : Colors.green,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(26),
@@ -616,7 +624,7 @@ class _RunningScreenState extends State<RunningScreen>
                           'Longest Run',
                           '${provider.longestRunKm.toStringAsFixed(1)} km',
                           Icons.emoji_events,
-                          Colors.amber[800]!,
+                          AppTheme.crimsonBerryLight,
                         ),
                       ),
                     ],
@@ -663,16 +671,20 @@ class _RunningScreenState extends State<RunningScreen>
                   final formattedDate =
                       DateFormat('MMM d, yyyy • h:mm a').format(run.startTime);
 
-                  return Container(
+                  return Card(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 6,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[200]!),
+                      side: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF232733)
+                            : Colors.grey[200]!,
+                      ),
                     ),
+                    clipBehavior: Clip.antiAlias,
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -839,7 +851,7 @@ class _SafeGoogleMapViewState extends State<_SafeGoogleMapView> {
                 height: 32,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
-                  color: Colors.deepOrange,
+                  color: AppTheme.crimsonBerryLight,
                 ),
               ),
               const SizedBox(height: 16),
@@ -894,7 +906,7 @@ class _SafeGoogleMapViewState extends State<_SafeGoogleMapView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.cloud_off, size: 48, color: Colors.orangeAccent),
+              const Icon(Icons.cloud_off, size: 48, color: AppTheme.crimsonBerryLight),
               const SizedBox(height: 12),
               const Text(
                 'Google Maps Unavailable',
