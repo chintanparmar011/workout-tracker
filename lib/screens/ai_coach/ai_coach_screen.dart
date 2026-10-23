@@ -4,7 +4,6 @@ import '../../app/theme.dart';
 import '../../providers/ai_coach_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/ai_message_model.dart';
-import '../../utils/api_constants.dart';
 import '../../widgets/app_brand.dart';
 
 class AiCoachScreen extends StatefulWidget {
@@ -65,86 +64,6 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     aiProvider.sendMessage(text, userProfile: userProfile, userId: userId);
     _scrollToBottom();
   }
-
-  void _showApiKeyDialog() {
-    final aiProvider = context.read<AiCoachProvider>();
-    final controller = TextEditingController(
-      text: aiProvider.customApiKey ??
-          (ApiConstants.geminiApiKey.isNotEmpty ? ApiConstants.geminiApiKey : ''),
-    );
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.vpn_key, color: AppTheme.crimsonBerryLight),
-            SizedBox(width: 8),
-            Text('Gemini API Key'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'OmniFit AI Coach uses Google Gemini 2.5 Flash for real-time fitness intelligence. You can get a free key at:',
-              style: TextStyle(fontSize: 13, height: 1.4),
-            ),
-            const SizedBox(height: 6),
-            const SelectableText(
-              'https://aistudio.google.com/',
-              style: TextStyle(
-                color: AppTheme.crimsonBerryLight,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'If left blank, OmniFit automatically uses its built-in offline fitness expert engine.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Google AI Studio API Key',
-                hintText: 'AIzaSy...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              aiProvider.setCustomApiKey('');
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Reverted to built-in fitness engine')),
-              );
-            },
-            child: const Text('Use Default'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              aiProvider.setCustomApiKey(controller.text.trim());
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Gemini API key updated successfully!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text('Save Key'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final aiProvider = context.watch<AiCoachProvider>();
@@ -152,30 +71,32 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Row(
-          children: [
-            const AppBrandMark(size: 34),
-            const SizedBox(width: 10),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'OmniFit AI Coach',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Fitness & Nutrition Specialist',
-                  style: TextStyle(fontSize: 11, color: Colors.white70),
-                ),
-              ],
+          children: const [
+            AppBrandMark(size: 34),
+            SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'OmniFit AI Coach',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    'Fitness & Nutrition Specialist',
+                    style: TextStyle(fontSize: 11, color: Colors.white70),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.vpn_key_outlined),
-            tooltip: 'Configure Gemini API Key',
-            onPressed: _showApiKeyDialog,
-          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Clear Chat',
@@ -280,34 +201,39 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             child: const Icon(Icons.fitness_center, size: 18, color: AppTheme.crimsonBerryLight),
           ),
           const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppTheme.slateCardElevated,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.slateCardElevated,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+                border: Border.all(color: AppTheme.slateBorder),
               ),
-              border: Border.all(color: AppTheme.slateBorder),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.crimsonBerryLight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.crimsonBerryLight,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'OmniFit Coach is preparing your fitness advice...',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
+                  SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      'OmniFit Coach is preparing advice...',
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

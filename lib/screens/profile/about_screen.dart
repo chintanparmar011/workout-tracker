@@ -36,7 +36,7 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Version 1.0.0',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                 ),
               ],
             ),
@@ -131,8 +131,11 @@ class AboutScreen extends StatelessWidget {
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: AppTheme.crimsonBerry.withValues(alpha: 0.3),
+              ),
             ),
-            color: AppTheme.crimsonBerry.withValues(alpha: 0.08),
+            color: AppTheme.slateCard,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -140,7 +143,11 @@ class AboutScreen extends StatelessWidget {
                   const Text(
                     'Have feedback, questions, or found a bug? Reach out directly!',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   InkWell(
@@ -186,15 +193,15 @@ class AboutScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 8),
-                          Icon(Icons.copy, size: 16, color: Colors.grey),
+                          Icon(Icons.copy, size: 16, color: AppTheme.textMuted),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
+                  const Text(
                     'Tap to copy email address',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                   ),
                 ],
               ),
@@ -239,7 +246,7 @@ class _FeatureBullet extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
               ),
             ],
           ),
@@ -278,7 +285,7 @@ class _StepBullet extends StatelessWidget {
             padding: const EdgeInsets.only(top: 2),
             child: Text(
               text,
-              style: TextStyle(color: Colors.grey[800], fontSize: 13),
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
             ),
           ),
         ),

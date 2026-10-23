@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.InputStream
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -26,12 +29,14 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        val localProps = java.util.Properties()
+        val localProps = Properties()
         val localPropsFile = rootProject.file("local.properties")
         if (localPropsFile.exists()) {
-            localPropsFile.inputStream().use { localProps.load(it) }
+            localPropsFile.inputStream().use { stream: InputStream ->
+                localProps.load(stream)
+            }
         }
-        manifestPlaceholders["MAPS_API_KEY"] = localProps.getProperty("MAPS_API_KEY") ?: ""
+        manifestPlaceholders["MAPS_API_KEY"] = localProps.getProperty("MAPS_API_KEY") ?: "AIzaSyCz94_tEpE2dUcWkYSuQFzaG4RwcOehdnw"
     }
 
     buildTypes {
